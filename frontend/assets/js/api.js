@@ -30,7 +30,8 @@ function resolveApiBaseUrl() {
   // If hosted behind a reverse proxy (e.g. Nginx, Docker, Caddy), use relative /api
   // Otherwise if on static hosts (Vercel, Netlify), allow stored URL or backend fallback
   if (window.location.hostname.endsWith('vercel.app') || window.location.hostname.endsWith('netlify.app')) {
-    return localStorage.getItem('vyparos_api_url') || 'http://localhost:8080/api';
+    return localStorage.getItem('vyparos_api_url') || 'https://vyaparos-production.up.railway.app/api';
+    
   }
   return `${window.location.origin}/api`;
 }
