@@ -24,7 +24,7 @@ Project Guide: Er. Ram Babu Buri
 |:---:|---|---|---|
 | 1 | Jagrati Sahu | ACEIT24E1ARADF30P064 | [sahujagrati822@gmail.com](mailto:sahujagrati822@gmail.com) |
 | 2 | Koshi Jain | ACEIT24E1ARADF40P082 | [gowadiakoshi@gmail.com](mailto:gowadiakoshi@gmail.com) |
-| 3 | Navya Raj | ACEIT24E1ARADF30P0109 | [navyahipe18@gmail.com](mailto:navyahipe18@gmail.com) |
+| 3 | Navya Raj | ACEIT24E1ARADF30P0109 | [navyahope18@gmail.com](mailto:navyahope18@gmail.com) |
 | 4 | Palak Sahani | ACEIT24E1ARADF30P117 | [sahanipalak07@gmail.com](mailto:sahanipalak07@gmail.com) |
 | 5 | Kumkum Rathore | ACEIT24E1ARADF40P086 | [kumkumrathore@gmail.com](mailto:kumkumrathore@gmail.com) |
 
