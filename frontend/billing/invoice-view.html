@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+    .biz-brand {
+      display: flex;
+      flex-direction: column;
+    }
+    .biz-brand img {
+      height: 38px;
+      width: auto;
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+    .biz-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #4f46e5;
+    }
+    .invoice-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: right;
+      color: #0f172a;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th {
+      background: #f1f5f9;
+      padding: 12px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .totals-area {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-table {
+      width: 300px;
+    }
+    .totals-table td {
+      border: none;
+      padding: 6px 12px;
+    }
+    .total-row {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #4f46e5;
+      border-top: 2px solid #cbd5e1 !important;
+    }
+    .print-bar {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .invoice-container { box-shadow: none; padding: 0; }
+      .print-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-bar">
+    <button onclick="window.history.back()" style="padding:8px 16px; cursor:pointer;">← Back</button>
+    <button onclick="window.print()" style="padding:8px 16px; background:#4f46e5; color:#fff; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">
+      🖨️ Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="invoice-container">
+    <div class="invoice-header">
+      <div class="biz-brand">
+        <img src="../assets/brand/logo-light.svg" alt="VyaparOS">
+        <div class="biz-title" id="bizName">VyaparOS Business</div>
+        <div id="bizAddress" style="color:#64748b; font-size:0.9rem; margin-top:4px;"></div>
+        <div id="bizContact" style="color:#64748b; font-size:0.9rem;"></div>
+      </div>
+      <div>
+        <div class="invoice-title">TAX INVOICE</div>
+        <div style="font-weight:bold; font-size:1.1rem; color:#64748b; margin-top:4px;" id="invNumber">-</div>
+        <div style="color:#64748b; font-size:0.9rem;" id="invDate">-</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div>
+        <strong style="color:#475569; font-size:0.8rem; text-transform:uppercase;">Billed To:</strong>
+        <div style="font-size:1.1rem; font-weight:700; margin-top:4px;" id="custName">Walk-in Customer</div>
+        <div id="custPhone" style="color:#64748b;"></div>
+        <div id="custEmail" style="color:#64748b;"></div>
+        <div id="custAddress" style="color:#64748b;"></div>
+      </div>
+      <div style="text-align: right;">
+        <strong style="color:#475569; font-size:0.8rem; text-transform:uppercase;">Payment Status:</strong>
+        <div style="font-size:1.2rem; font-weight:800; color:#10b981; margin-top:4px;" id="invStatus">ISSUED</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th style="text-align:center;">Type</th>
+          <th style="text-align:center;">Qty</th>
+          <th style="text-align:right;">Unit Price</th>
+          <th style="text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <tr><td colspan="5" style="text-align:center;">Loading items...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="totals-area">
+      <table class="totals-table">
+        <tr>
+          <td>Subtotal:</td>
+          <td style="text-align:right; font-weight:600;" id="valSubtotal">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Discount:</td>
+          <td style="text-align:right; color:#ef4444;" id="valDiscount">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Tax:</td>
+          <td style="text-align:right;" id="valTax">₹0.00</td>
+        </tr>
+        <tr class="total-row">
+          <td>Total:</td>
+          <td style="text-align:right;" id="valTotal">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Amount Paid:</td>
+          <td style="text-align:right; color:#10b981; font-weight:600;" id="valPaid">₹0.00</td>
+        </tr>
+        <tr>
+          <td>Balance Due:</td>
+          <td style="text-align:right; color:#ef4444; font-weight:700;" id="valBalance">₹0.00</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 16px; color: #94a3b8; font-size: 0.85rem; text-align: center;">
+      Thank you for your business! Powered by VyaparOS
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const invoiceId = urlParams.get('id');
+      const biz = API.storage.getActiveBusiness();
+
+      if (!invoiceId || !biz) {
+        alert('Invalid Invoice URL');
+        return;
+      }
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/invoices/${invoiceId}`);
+        const inv = res.data;
+
+        document.getElementById('bizName').innerText = biz.businessName || 'VyaparOS Workspace';
+        document.getElementById('invNumber').innerText = inv.invoiceNumber;
+        document.getElementById('invDate').innerText = `Date: ${API.formatDate(inv.invoiceDate)}`;
+        document.getElementById('invStatus').innerText = inv.status;
+
+        if (inv.customer) {
+          document.getElementById('custName').innerText = inv.customer.name;
+          document.getElementById('custPhone').innerText = inv.customer.phone || '';
+          document.getElementById('custEmail').innerText = inv.customer.email || '';
+          document.getElementById('custAddress').innerText = inv.customer.address || '';
+        }
+
+        const itemsBody = document.getElementById('itemsBody');
+        itemsBody.innerHTML = inv.items.map(it => `
+          <tr>
+            <td><strong>${it.itemName}</strong></td>
+            <td style="text-align:center; color:#64748b; font-size:0.85rem;">${it.itemType}</td>
+            <td style="text-align:center;">${it.quantity}</td>
+            <td style="text-align:right;">${API.formatCurrency(it.unitPrice, biz.currency)}</td>
+            <td style="text-align:right; font-weight:600;">${API.formatCurrency(it.lineTotal, biz.currency)}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('valSubtotal').innerText = API.formatCurrency(inv.subtotal, biz.currency);
+        document.getElementById('valDiscount').innerText = `- ${API.formatCurrency(inv.discountAmount, biz.currency)}`;
+        document.getElementById('valTax').innerText = API.formatCurrency(inv.taxAmount, biz.currency);
+        document.getElementById('valTotal').innerText = API.formatCurrency(inv.totalAmount, biz.currency);
+        document.getElementById('valPaid').innerText = API.formatCurrency(inv.paidAmount, biz.currency);
+        document.getElementById('valBalance').innerText = API.formatCurrency(inv.balanceDue, biz.currency);
+
+      } catch (err) {
+        alert('Failed to load invoice: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

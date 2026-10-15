@@ -1,0 +1,12 @@
+/login        /login.html        200
+/register     /register.html     200
+/dashboard    /dashboard.html    200
+/appointments /appointments/index.html 200
+/attendance   /attendance/index.html   200
+/billing      /billing/index.html      200
+/customers    /customers/index.html    200
+/finance      /finance/index.html      200
+/inventory    /inventory/index.html    200
+/services     /services/index.html     200
+/settings     /settings/index.html     200
+/staff        /staff/index.html        200

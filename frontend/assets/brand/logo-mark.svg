@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <defs>
+    <linearGradient id="mark-grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="60%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="mark-grad-right" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="50%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="mark-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#38BDF8" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Left Facet -->
+  <path d="M7 10 H18 L24 28 L17.5 28 Z" fill="url(#mark-grad-left)"/>
+  
+  <!-- Right Facet with Growth Projection -->
+  <path d="M41 10 H30 L24 28 L30.5 28 Z" fill="url(#mark-grad-right)"/>
+
+  <!-- Lower Anchor point -->
+  <path d="M17.5 28 L24 28 L30.5 28 L24 43 Z" fill="url(#mark-grad-left)" opacity="0.9"/>
+
+  <!-- Central Dynamic Apex Node / Growth Diamond -->
+  <polygon points="24,14 30.5,25 24,36 17.5,25" fill="#38BDF8" filter="url(#mark-glow)"/>
+  <polygon points="24,18 28.5,25 24,32 19.5,25" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="320" height="64" fill="none">
+  <defs>
+    <linearGradient id="full-grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="50%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="full-grad-right" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="60%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="text-os-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+    <filter id="full-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#06b6d4" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- ICON EMBLEM (Left side 0..52) -->
+  <g transform="translate(4, 4)">
+    <!-- Squircle Container for Icon -->
+    <rect width="52" height="52" rx="14" fill="#0F172A" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.2"/>
+    <circle cx="26" cy="26" r="18" fill="#4F46E5" opacity="0.15" filter="blur(6px)"/>
+    
+    <!-- Left Wing -->
+    <path d="M12 14 H20.5 L26 31 L20.5 31 Z" fill="url(#full-grad-left)"/>
+    <!-- Right Wing -->
+    <path d="M40 14 H31.5 L26 31 L31.5 31 Z" fill="url(#full-grad-right)"/>
+    <!-- Bottom Anchor -->
+    <path d="M20.5 31 H31.5 L26 42 Z" fill="url(#full-grad-left)" opacity="0.9"/>
+    <!-- Dynamic Growth Core -->
+    <polygon points="26,18 31.5,27 26,36 20.5,27" fill="#38BDF8" filter="url(#full-glow)"/>
+    <polygon points="26,21 29.5,27 26,33 22.5,27" fill="#FFFFFF"/>
+  </g>
+
+  <!-- WORDMARK: VyaparOS -->
+  <!-- "Vyapar" in bold modern font -->
+  <text x="68" y="36" font-family="'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="26" font-weight="800" fill="#F8FAFC" letter-spacing="-0.5">Vyapar</text>
+
+  <!-- "OS" Pill Badge -->
+  <g transform="translate(168, 17)">
+    <rect width="46" height="23" rx="6" fill="rgba(6, 182, 212, 0.12)" stroke="rgba(6, 182, 212, 0.45)" stroke-width="1"/>
+    <text x="23" y="16.5" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="url(#text-os-grad)" text-anchor="middle" letter-spacing="0.5">OS</text>
+  </g>
+
+  <!-- TAGLINE: "One platform. Your entire business." -->
+  <text x="69" y="52" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#94A3B8" letter-spacing="0.6">One platform. Your entire business.</text>
+</svg>

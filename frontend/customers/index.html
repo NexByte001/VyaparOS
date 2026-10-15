@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Customer Directory</h1>
+        <div class="top-actions">
+          <button class="btn btn-primary" onclick="openAddCustomerModal()">
+            <span>+</span> Add Customer
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <div class="card" style="margin-bottom: 24px;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name, phone, or email..." style="max-width: 400px;" oninput="debounceSearch()">
+            <button class="btn btn-secondary" onclick="loadCustomers()">Search</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Address</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-dim);">Loading customers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add/Edit Customer Modal -->
+  <div id="customerModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle" class="card-title">Add New Customer</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form id="customerForm">
+        <input type="hidden" id="editCustomerId">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="custName" class="form-control" required placeholder="e.g. Priya Sharma">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" id="custPhone" class="form-control" placeholder="9876543210">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="custEmail" class="form-control" placeholder="priya@gmail.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" id="custAddress" class="form-control" placeholder="Indiranagar, Bengaluru">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Customer Notes / Preferences</label>
+          <textarea id="custNotes" class="form-control" rows="3" placeholder="Special preferences, allergies, etc."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    let searchTimeout = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('customers');
+      loadCustomers();
+    });
+
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadCustomers, 350);
+    }
+
+    async function loadCustomers() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      const q = document.getElementById('searchInput').value.trim();
+      const tbody = document.getElementById('customersTableBody');
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/customers?search=${encodeURIComponent(q)}`);
+        const list = res?.data?.content || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No customers found</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.email || '-'}</td>
+            <td>${c.address || '-'}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${c.notes || '-'}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm" onclick='editCustomer(${JSON.stringify(c)})'>Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="archiveCustomer(${c.id})">Archive</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        API.showToast(err.message || 'Failed to load customers', 'error');
+      }
+    }
+
+    function openAddCustomerModal() {
+      document.getElementById('editCustomerId').value = '';
+      document.getElementById('modalTitle').innerText = 'Add New Customer';
+      document.getElementById('customerForm').reset();
+      document.getElementById('customerModal').classList.add('active');
+    }
+
+    function editCustomer(c) {
+      document.getElementById('editCustomerId').value = c.id;
+      document.getElementById('modalTitle').innerText = 'Edit Customer';
+      document.getElementById('custName').value = c.name;
+      document.getElementById('custPhone').value = c.phone || '';
+      document.getElementById('custEmail').value = c.email || '';
+      document.getElementById('custAddress').value = c.address || '';
+      document.getElementById('custNotes').value = c.notes || '';
+      document.getElementById('customerModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('customerModal').classList.remove('active');
+    }
+
+    document.getElementById('customerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const id = document.getElementById('editCustomerId').value;
+
+      const payload = {
+        name: document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        email: document.getElementById('custEmail').value.trim(),
+        address: document.getElementById('custAddress').value.trim(),
+        notes: document.getElementById('custNotes').value.trim()
+      };
+
+      try {
+        if (id) {
+          await API.request(`/businesses/${biz.businessId}/customers/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          API.showToast('Customer updated successfully', 'success');
+        } else {
+          await API.request(`/businesses/${biz.businessId}/customers`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          API.showToast('Customer added successfully', 'success');
+        }
+        closeModal();
+        loadCustomers();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+
+    async function archiveCustomer(id) {
+      if (!confirm('Are you sure you want to archive this customer?')) return;
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/customers/${id}`, { method: 'DELETE' });
+        API.showToast('Customer archived', 'success');
+        loadCustomers();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Executive Dashboard</h1>
+        <div class="top-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">
+            <span>🔄</span> Refresh
+          </button>
+          <a href="billing/index.html" class="btn btn-primary btn-sm">
+            <span>+</span> New Invoice
+          </a>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- KPI Cards Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Invoiced Revenue</span>
+            <span class="stat-value" id="statInvoiced">₹0.00</span>
+            <span class="stat-subtitle">Total non-void invoices (30 days)</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Cash Collected</span>
+            <span class="stat-value" id="statCollected" style="color: var(--success);">₹0.00</span>
+            <span class="stat-subtitle">Actual payments collected</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Recorded Expenses</span>
+            <span class="stat-value" id="statExpenses" style="color: var(--danger);">₹0.00</span>
+            <span class="stat-subtitle">Total operating outflows</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Operating Profit</span>
+            <span class="stat-value" id="statProfit" style="color: var(--secondary);">₹0.00</span>
+            <span class="stat-subtitle">Cash collected minus expenses</span>
+          </div>
+        </div>
+
+        <!-- Charts and Today's Schedule -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px;">
+          <!-- Financial Chart -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Expense Breakdown by Category</h2>
+            </div>
+            <div style="height: 260px; display:flex; align-items:center; justify-content:center;">
+              <canvas id="expenseChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Quick Attendance Widget -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Staff Attendance Status</h2>
+              <span id="attendanceBadge" class="badge badge-warning">CHECKING</span>
+            </div>
+            <div style="padding: 12px 0;">
+              <p id="attendanceMessage" style="color: var(--text-muted); margin-bottom: 18px; font-size: 0.95rem;">
+                Clock in to start recording your work hours for today.
+              </p>
+              <div style="display: flex; gap: 12px;">
+                <button id="btnClockIn" class="btn btn-success" onclick="handleClockIn()">Clock In</button>
+                <button id="btnClockOut" class="btn btn-danger" onclick="handleClockOut()" disabled>Clock Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Appointments & Low Stock Tables -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+          <!-- Appointments Card -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Today's Appointments</h2>
+              <a href="appointments/index.html" class="btn btn-secondary btn-sm">View All</a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="appointmentsTableBody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-dim);">Loading appointments...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Low Stock Alerts -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Low-Stock Product Alerts</h2>
+              <a href="inventory/index.html" class="btn btn-secondary btn-sm">Restock</a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Current Stock</th>
+                    <th>Threshold</th>
+                  </tr>
+                </thead>
+                <tbody id="lowStockTableBody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-dim);">Loading stock alerts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    let expenseChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('dashboard');
+      await loadDashboardData();
+      await checkAttendanceState();
+    });
+
+    async function loadDashboardData() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      try {
+        // 1. Fetch Financial Summary
+        const finRes = await API.request(`/businesses/${biz.businessId}/reports/financial-summary`);
+        if (finRes && finRes.data) {
+          const d = finRes.data;
+          document.getElementById('statInvoiced').innerText = API.formatCurrency(d.invoicedRevenue, biz.currency);
+          document.getElementById('statCollected').innerText = API.formatCurrency(d.cashCollected, biz.currency);
+          document.getElementById('statExpenses').innerText = API.formatCurrency(d.recordedExpenses, biz.currency);
+          document.getElementById('statProfit').innerText = API.formatCurrency(d.operatingProfit, biz.currency);
+
+          renderExpenseChart(d.expenseBreakdown || []);
+        }
+
+        // 2. Fetch Appointments for Today
+        const today = new Date().toISOString().split('T')[0];
+        const apptRes = await API.request(`/businesses/${biz.businessId}/appointments?startDate=${today}T00:00:00Z&endDate=${today}T23:59:59Z`);
+        renderAppointments(apptRes?.data || []);
+
+        // 3. Fetch Low Stock Alerts
+        const stockRes = await API.request(`/businesses/${biz.businessId}/products/low-stock-alerts`);
+        renderLowStock(stockRes?.data || []);
+
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+        API.showToast('Could not load all dashboard metrics', 'error');
+      }
+    }
+
+    function renderExpenseChart(breakdown) {
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      if (expenseChartInstance) expenseChartInstance.destroy();
+
+      if (breakdown.length === 0) {
+        expenseChartInstance = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['No Recorded Expenses'],
+            datasets: [{ data: [1], backgroundColor: ['#334155'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+        return;
+      }
+
+      expenseChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: breakdown.map(b => b.category),
+          datasets: [{
+            data: breakdown.map(b => b.totalAmount),
+            backgroundColor: ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    function renderAppointments(list) {
+      const tbody = document.getElementById('appointmentsTableBody');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No appointments scheduled for today</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.slice(0, 5).map(a => `
+        <tr>
+          <td><strong>${a.customer ? a.customer.name : 'Walk-in'}</strong></td>
+          <td>${a.service ? a.service.name : '-'}</td>
+          <td>${API.formatDateTime(a.startTime).split(',')[1]}</td>
+          <td><span class="badge badge-primary">${a.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderLowStock(list) {
+      const tbody = document.getElementById('lowStockTableBody');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--success);">All products are well stocked</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.slice(0, 5).map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td style="color: var(--text-dim);">${p.sku || '-'}</td>
+          <td style="color: var(--danger); font-weight: 700;">${p.currentStock} units</td>
+          <td>${p.reorderThreshold}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function checkAttendanceState() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/attendance/me`);
+        const records = res.data || [];
+        const openSession = records.find(r => r.status === 'OPEN');
+
+        const badge = document.getElementById('attendanceBadge');
+        const msg = document.getElementById('attendanceMessage');
+        const btnIn = document.getElementById('btnClockIn');
+        const btnOut = document.getElementById('btnClockOut');
+
+        if (openSession) {
+          badge.className = 'badge badge-success';
+          badge.innerText = 'CLOCKED IN';
+          msg.innerHTML = `Active session started at <strong>${API.formatDateTime(openSession.clockInTime)}</strong>`;
+          btnIn.disabled = true;
+          btnOut.disabled = false;
+        } else {
+          badge.className = 'badge badge-warning';
+          badge.innerText = 'CLOCKED OUT';
+          msg.innerText = 'You are currently off the clock. Click Clock In to start.';
+          btnIn.disabled = false;
+          btnOut.disabled = true;
+        }
+      } catch (err) {
+        console.error('Attendance check failed', err);
+      }
+    }
+
+    async function handleClockIn() {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/attendance/clock-in`, { method: 'POST' });
+        API.showToast('Clocked in successfully!', 'success');
+        await checkAttendanceState();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    async function handleClockOut() {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/attendance/clock-out`, { method: 'POST' });
+        API.showToast('Clocked out successfully!', 'success');
+        await checkAttendanceState();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

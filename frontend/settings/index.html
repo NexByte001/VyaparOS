@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Settings & Audit — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Workspace Settings & Audit Trails</h1>
+        <div class="top-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openNewWorkspaceModal()">
+            <span>+</span> New Business Workspace
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px;">
+          <!-- Business Profile Card -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Business Profile</h2>
+            </div>
+            <form id="bizProfileForm">
+              <div class="form-group">
+                <label class="form-label">Business Name *</label>
+                <input type="text" id="bizName" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Business Type</label>
+                <input type="text" id="bizType" class="form-control" placeholder="Salon, Spa, Gym, Boutique, Studio">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Currency (3-Letter ISO Code) *</label>
+                  <input type="text" id="bizCurrency" class="form-control" list="currencyOptions" maxlength="3" pattern="[A-Za-z]{3}" placeholder="INR" value="INR" required style="text-transform: uppercase;">
+                  <datalist id="currencyOptions">
+                    <option value="INR">INR - Indian Rupee (₹)</option>
+                    <option value="USD">USD - US Dollar ($)</option>
+                    <option value="EUR">EUR - Euro (€)</option>
+                    <option value="GBP">GBP - British Pound (£)</option>
+                    <option value="AED">AED - UAE Dirham (د.إ)</option>
+                    <option value="CAD">CAD - Canadian Dollar ($)</option>
+                    <option value="AUD">AUD - Australian Dollar ($)</option>
+                    <option value="SGD">SGD - Singapore Dollar ($)</option>
+                  </datalist>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Timezone</label>
+                  <input type="text" id="bizTimezone" class="form-control" value="Asia/Kolkata">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Business Address</label>
+                <input type="text" id="bizAddress" class="form-control">
+              </div>
+              <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+          </div>
+
+          <!-- Tax & Billing Settings Card -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Taxes & Invoicing Settings</h2>
+            </div>
+            <form id="bizSettingsForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Tax Name</label>
+                  <input type="text" id="taxName" class="form-control" value="GST">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tax Rate (%)</label>
+                  <input type="number" id="taxRate" class="form-control" min="0" max="100" step="0.01" value="18.00">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Invoice Number Prefix</label>
+                <input type="text" id="invPrefix" class="form-control" value="INV">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Default Appointment Duration (Minutes)</label>
+                <input type="number" id="defaultDuration" class="form-control" min="5" step="5" value="30">
+              </div>
+              <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Immutable Audit Logs -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Immutable Audit Trail (Admin Log)</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Log</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Entity</th>
+                  <th>User</th>
+                  <th>Reason / Details</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableBody">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-dim);">Loading audit trail...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create New Workspace Modal -->
+  <div id="newWorkspaceModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="card-title">Create New Business Workspace</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form id="newWorkspaceForm">
+        <div class="form-group">
+          <label class="form-label">Business Name *</label>
+          <input type="text" id="newBizName" class="form-control" required placeholder="e.g. Bella Salon & Spa">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Business Type *</label>
+          <input type="text" id="newBizType" class="form-control" required placeholder="Salon, Spa, Gym, Boutique, Studio, Repair">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="newBizPhone" class="form-control" placeholder="9876543210">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="newBizEmail" class="form-control" placeholder="contact@bellaspa.com">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Currency (3-Letter ISO Code)</label>
+            <input type="text" id="newBizCurrency" class="form-control" list="currencyOptions" maxlength="3" pattern="[A-Za-z]{3}" placeholder="INR" value="INR" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timezone</label>
+            <input type="text" id="newBizTimezone" class="form-control" value="Asia/Kolkata">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" id="newBizAddress" class="form-control" placeholder="MG Road, Bengaluru">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Launch Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.checkAuthGuard()) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('setup') === 'true') {
+        openNewWorkspaceModal();
+      }
+
+      API.renderSidebar('settings');
+      await loadBusinessProfile();
+      await loadBusinessSettings();
+      await loadAuditLogs();
+    });
+
+    async function loadBusinessProfile() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}`);
+        const d = res.data;
+        document.getElementById('bizName').value = d.name;
+        document.getElementById('bizType').value = d.businessType || '';
+        document.getElementById('bizCurrency').value = d.currency || 'INR';
+        document.getElementById('bizTimezone').value = d.timezone || 'Asia/Kolkata';
+        document.getElementById('bizAddress').value = d.address || '';
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadBusinessSettings() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/settings`);
+        const d = res.data;
+        document.getElementById('taxName').value = d.taxName || 'GST';
+        document.getElementById('taxRate').value = d.taxRate !== undefined ? d.taxRate : 18.00;
+        document.getElementById('invPrefix').value = d.invoicePrefix || 'INV';
+        document.getElementById('defaultDuration').value = d.defaultAppointmentDuration || 30;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadAuditLogs() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const tbody = document.getElementById('auditTableBody');
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/admin/audit-logs?size=30`);
+        const list = res?.data?.content || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No audit events recorded yet</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(l => `
+          <tr>
+            <td style="color:var(--text-dim); font-size:0.85rem;">${API.formatDateTime(l.timestamp)}</td>
+            <td><span class="badge badge-primary">${l.action}</span></td>
+            <td><strong>${l.entityType}</strong> #${l.entityId || '-'}</td>
+            <td>${l.user ? l.user.fullName : 'System'}</td>
+            <td>
+              <div style="font-size:0.85rem;">${l.reason || ''}</div>
+              <div style="font-size:0.8rem; color:var(--text-dim);">${l.details || ''}</div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openNewWorkspaceModal() {
+      document.getElementById('newWorkspaceForm').reset();
+      document.getElementById('newWorkspaceModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('newWorkspaceModal').classList.remove('active');
+    }
+
+    document.getElementById('bizProfileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+
+      const currencyInput = document.getElementById('bizCurrency').value.trim().toUpperCase();
+      if (!API.isValidCurrencyCode(currencyInput)) {
+        API.showToast('Invalid currency code: Must be a standard 3-letter code (e.g. INR, USD, EUR)', 'error');
+        return;
+      }
+
+      const payload = {
+        name: document.getElementById('bizName').value.trim(),
+        businessType: document.getElementById('bizType').value.trim(),
+        currency: currencyInput,
+        timezone: document.getElementById('bizTimezone').value.trim(),
+        address: document.getElementById('bizAddress').value.trim()
+      };
+
+      try {
+        await API.request(`/businesses/${biz.businessId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+        API.showToast('Business profile updated', 'success');
+        biz.businessName = payload.name;
+        biz.currency = payload.currency;
+        biz.timezone = payload.timezone;
+        API.storage.setActiveBusiness(biz);
+        API.renderSidebar('settings');
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+
+    document.getElementById('bizSettingsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+
+      const payload = {
+        taxName: document.getElementById('taxName').value.trim(),
+        taxRate: parseFloat(document.getElementById('taxRate').value),
+        invoicePrefix: document.getElementById('invPrefix').value.trim(),
+        defaultAppointmentDuration: parseInt(document.getElementById('defaultDuration').value)
+      };
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/settings`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+        API.showToast('Tax & Invoicing settings saved', 'success');
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+
+    document.getElementById('newWorkspaceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currInput = (document.getElementById('newBizCurrency').value || 'INR').trim().toUpperCase();
+      if (!API.isValidCurrencyCode(currInput)) {
+        API.showToast('Invalid currency code: Must be a standard 3-letter code (e.g. INR, USD, EUR)', 'error');
+        return;
+      }
+
+      const payload = {
+        name: document.getElementById('newBizName').value.trim(),
+        businessType: document.getElementById('newBizType').value.trim(),
+        currency: currInput,
+        timezone: (document.getElementById('newBizTimezone').value || 'Asia/Kolkata').trim(),
+        phone: document.getElementById('newBizPhone').value.trim(),
+        email: document.getElementById('newBizEmail').value.trim(),
+        address: document.getElementById('newBizAddress').value.trim()
+      };
+
+      try {
+        const res = await API.request('/businesses', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        if (res && res.data) {
+          const newBiz = {
+            businessId: res.data.id,
+            businessName: res.data.name,
+            businessType: res.data.businessType,
+            currency: res.data.currency,
+            timezone: res.data.timezone,
+            role: res.data.userRole || 'OWNER'
+          };
+          API.storage.setActiveBusiness(newBiz);
+          API.showToast('Workspace initialized! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 800);
+        }
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

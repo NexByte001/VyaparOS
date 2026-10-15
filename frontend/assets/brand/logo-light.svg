@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="320" height="64" fill="none">
+  <defs>
+    <linearGradient id="light-grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="light-grad-right" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ICON EMBLEM -->
+  <g transform="translate(4, 4)">
+    <rect width="52" height="52" rx="14" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.2"/>
+    
+    <!-- Left Wing -->
+    <path d="M12 14 H20.5 L26 31 L20.5 31 Z" fill="url(#light-grad-left)"/>
+    <!-- Right Wing -->
+    <path d="M40 14 H31.5 L26 31 L31.5 31 Z" fill="url(#light-grad-right)"/>
+    <!-- Bottom Anchor -->
+    <path d="M20.5 31 H31.5 L26 42 Z" fill="url(#light-grad-left)"/>
+    <!-- Dynamic Growth Core -->
+    <polygon points="26,18 31.5,27 26,36 20.5,27" fill="#0284C7"/>
+    <polygon points="26,21 29.5,27 26,33 22.5,27" fill="#FFFFFF"/>
+  </g>
+
+  <!-- WORDMARK: VyaparOS -->
+  <text x="68" y="36" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#0F172A" letter-spacing="-0.5">Vyapar</text>
+
+  <!-- "OS" Pill Badge -->
+  <g transform="translate(168, 17)">
+    <rect width="46" height="23" rx="6" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1"/>
+    <text x="23" y="16.5" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#0369A1" text-anchor="middle" letter-spacing="0.5">OS</text>
+  </g>
+
+  <!-- TAGLINE: "One platform. Your entire business." -->
+  <text x="69" y="52" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="9" font-weight="600" fill="#64748B" letter-spacing="0.6">One platform. Your entire business.</text>
+</svg>

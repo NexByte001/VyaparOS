@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accept Workspace Invitation — VyaparOS</title>
+  <meta name="description" content="Accept your team invitation to join VyaparOS business operating system.">
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .invite-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .invite-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-card);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      box-shadow: var(--shadow-lg);
+    }
+    .workspace-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(79, 70, 229, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      color: #c7d2fe;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="invite-container">
+    <div class="invite-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <img src="../assets/brand/logo.svg" alt="VyaparOS" style="height: 32px;" onerror="this.style.display='none'">
+          <span style="font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em;">VyaparOS</span>
+        </div>
+        <div id="loadingState">
+          <div style="padding: 24px 0; color: var(--text-muted); font-size: 0.95rem;">
+            Verifying invitation token...
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State Card -->
+      <div id="errorState" style="display: none; text-align: center;">
+        <div style="width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); color: #f87171; display: flex; align-items: center; justify-content: center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h2 id="errorTitle" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">Invitation Unavailable</h2>
+        <p id="errorMessage" style="color: var(--text-dim); font-size: 0.88rem; line-height: 1.5; margin-bottom: 24px;"></p>
+        <a href="../login.html" class="btn btn-secondary">Go to Login</a>
+      </div>
+
+      <!-- Accept Form State -->
+      <div id="inviteContent" style="display: none;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div class="workspace-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span id="invBizName">Workspace</span>
+          </div>
+          <h1 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 6px;">You're Invited to Join</h1>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">
+            Join as <strong id="invRole" style="color: #818cf8;">Staff</strong> on VyaparOS
+          </p>
+        </div>
+
+        <form id="acceptForm">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="accFullName" class="form-control" required placeholder="Your full name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="accEmail" class="form-control" readonly style="opacity: 0.85; background: rgba(15, 23, 42, 0.6);">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number (Optional)</label>
+            <input type="tel" id="accPhone" class="form-control" placeholder="+91 9876543210">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Choose a Password *</label>
+            <input type="password" id="accPassword" class="form-control" required minlength="6" placeholder="At least 6 characters">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password *</label>
+            <input type="password" id="accConfirmPassword" class="form-control" required minlength="6" placeholder="Repeat your password">
+          </div>
+
+          <div id="formError" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 16px;"></div>
+
+          <button type="submit" id="submitAcceptBtn" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 8px;">
+            <span>Accept & Enter Workspace</span>
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 0.82rem; color: var(--text-dim);">
+          Already have an account? <a href="../login.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    let inviteToken = '';
+    let invitationData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      inviteToken = urlParams.get('token');
+
+      if (!inviteToken) {
+        showError('Invalid Link', 'This invitation URL does not include a valid token. Please check the link or ask your workspace administrator to resend it.');
+        return;
+      }
+
+      fetchInvitationDetails();
+    });
+
+    async function fetchInvitationDetails() {
+      try {
+        const res = await API.request(`/invitations/${encodeURIComponent(inviteToken)}`);
+        invitationData = res?.data;
+
+        if (!invitationData) {
+          showError('Invitation Not Found', 'Could not locate this invitation. It may have expired or been removed.');
+          return;
+        }
+
+        renderInvitation();
+      } catch (err) {
+        showError('Invitation Error', err.message || 'Could not verify invitation token.');
+      }
+    }
+
+    function renderInvitation() {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('inviteContent').style.display = 'block';
+
+      document.getElementById('invBizName').textContent = invitationData.businessName || 'Workspace';
+      document.getElementById('invRole').textContent = invitationData.role;
+      document.getElementById('accFullName').value = invitationData.fullName || '';
+      document.getElementById('accEmail').value = invitationData.email || '';
+      document.getElementById('accPhone').value = invitationData.phone || '';
+    }
+
+    function showError(title, message) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('inviteContent').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('errorTitle').textContent = title;
+      document.getElementById('errorMessage').textContent = message;
+    }
+
+    document.getElementById('acceptForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('formError');
+      const submitBtn = document.getElementById('submitAcceptBtn');
+      errBox.style.display = 'none';
+
+      const fullName = document.getElementById('accFullName').value.trim();
+      const password = document.getElementById('accPassword').value;
+      const confirmPassword = document.getElementById('accConfirmPassword').value;
+      const phone = document.getElementById('accPhone').value.trim() || null;
+
+      if (password !== confirmPassword) {
+        errBox.textContent = 'Passwords do not match.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        errBox.textContent = 'Password must be at least 6 characters.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Creating Account & Joining...</span>';
+
+      try {
+        const res = await API.request(`/invitations/${encodeURIComponent(inviteToken)}/register-and-accept`, {
+          method: 'POST',
+          body: JSON.stringify({ fullName, password, phone })
+        });
+
+        const auth = res?.data;
+        if (auth?.token) {
+          // Set authentication session
+          API.storage.setToken(auth.token);
+          if (auth.user) API.storage.setUser(auth.user);
+          if (auth.memberships && auth.memberships.length > 0) {
+            API.storage.setActiveBusiness(auth.memberships[0]);
+          }
+
+          API.showToast('Welcome to VyaparOS! Redirecting to workspace...', 'success');
+          setTimeout(() => {
+            window.location.href = '../dashboard.html';
+          }, 1000);
+        } else {
+          API.showToast('Account created! Please sign in.', 'success');
+          setTimeout(() => {
+            window.location.href = '../login.html';
+          }, 1000);
+        }
+      } catch (err) {
+        errBox.textContent = err.message || 'Failed to complete registration.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Accept & Enter Workspace</span>';
+      }
+    });
+  </script>
+</body>
+</html>

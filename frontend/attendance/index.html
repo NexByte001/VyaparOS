@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Attendance — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .kpi-grid-7 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--bg-card, #1e293b);
+      border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kpi-title {
+      font-size: 0.78rem;
+      color: var(--text-dim, #94a3b8);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main, #f8fafc);
+      line-height: 1.2;
+    }
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted, #64748b);
+    }
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 10px 18px;
+      color: var(--text-dim, #94a3b8);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      color: var(--text-main, #f8fafc);
+    }
+    .tab-btn.active {
+      color: #06b6d4;
+      border-bottom-color: #06b6d4;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    .live-pulse {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+      box-shadow: 0 0 8px #22c55e;
+      animation: pulseAnim 1.6s infinite ease-in-out;
+    }
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .timer-badge {
+      font-family: monospace;
+      font-size: 0.88rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .badge-auto {
+      background: rgba(14, 165, 233, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .badge-manual {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .status-badge-present { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .status-badge-absent { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-badge-leave { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .status-badge-half { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-badge-open { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .status-badge-completed { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-badge-corrected { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .status-badge-unmarked { background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px dashed rgba(148, 163, 184, 0.3); }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Staff Attendance & Work Hours</h1>
+        <div class="top-actions">
+          <button class="btn btn-primary" onclick="openMarkModal()">
+            <span>+</span> Mark Attendance
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- Live Personal Clock In/Out Banner -->
+        <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98)); border-left: 4px solid #06b6d4;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span id="myDutyBadge" class="badge badge-warning">CHECKING</span>
+                <span id="myLiveTimer" class="timer-badge" style="display:none;">00:00:00</span>
+              </div>
+              <h2 id="myStatusTitle" class="card-title" style="font-size: 1.25rem; margin-bottom: 2px;">Loading session...</h2>
+              <p id="myStatusSubtitle" style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">Please wait</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button id="btnClockInPersonal" class="btn btn-success" style="padding: 10px 24px; font-weight: 600;" onclick="handleClockIn()">
+                ▶ Clock In
+              </button>
+              <button id="btnClockOutPersonal" class="btn btn-danger" style="padding: 10px 24px; font-weight: 600;" onclick="handleClockOut()" disabled>
+                ⏹ Clock Out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 Dashboard KPI Cards -->
+        <div class="kpi-grid-7">
+          <div class="kpi-card">
+            <span class="kpi-title">Total Staff</span>
+            <span class="kpi-value" id="kpiTotalStaff">-</span>
+            <span class="kpi-sub">Active team members</span>
+          </div>
+          <div class="kpi-card" style="border-top: 2px solid #22c55e;">
+            <span class="kpi-title">Present Today</span>
+            <span class="kpi-value" id="kpiPresentToday" style="color: #4ade80;">-</span>
+            <span class="kpi-sub">Recorded present / duty</span>
+          </div>
+          <div class="kpi-card" style="border-top: 2px solid #ef4444;">
+            <span class="kpi-title">Absent Today</span>
+            <span class="kpi-value" id="kpiAbsentToday" style="color: #f87171;">-</span>
+            <span class="kpi-sub">Marked absent</span>
+          </div>
+          <div class="kpi-card" style="border-top: 2px solid #06b6d4;">
+            <span class="kpi-title">Currently Working</span>
+            <span class="kpi-value" id="kpiWorkingNow" style="color: #38bdf8;">
+              <span class="live-pulse"></span><span id="kpiWorkingNowCount">-</span>
+            </span>
+            <span class="kpi-sub">Active live sessions</span>
+          </div>
+          <div class="kpi-card" style="border-top: 2px solid #a855f7;">
+            <span class="kpi-title">On Leave Today</span>
+            <span class="kpi-value" id="kpiOnLeaveToday" style="color: #c084fc;">-</span>
+            <span class="kpi-sub">Approved leave</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-title">Total Working Hours</span>
+            <span class="kpi-value" id="kpiTotalHours">-</span>
+            <span class="kpi-sub">Hours worked today</span>
+          </div>
+          <div class="kpi-card" style="border-top: 2px solid #f59e0b;">
+            <span class="kpi-title">Customers Attended</span>
+            <span class="kpi-value" id="kpiCustomersAttended" style="color: #fbbf24;">-</span>
+            <span class="kpi-sub">Completed appointments</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab('dailyTab', this)">📅 Daily Attendance</button>
+          <button class="tab-btn" onclick="switchTab('reportTab', this)">📊 Monthly Report & CSV</button>
+          <button class="tab-btn" onclick="switchTab('myHistoryTab', this)">👤 My Attendance Log</button>
+        </div>
+
+        <!-- Tab 1: Daily Attendance Table -->
+        <div id="dailyTab" class="tab-pane active">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                <label style="font-size: 0.88rem; font-weight: 600; color: var(--text-dim);">Date:</label>
+                <input type="date" id="dailyDatePicker" class="form-control" style="width: 170px;" onchange="loadDailyAttendanceAndKpis()">
+                
+                <label style="font-size: 0.88rem; font-weight: 600; color: var(--text-dim); margin-left: 8px;">Status:</label>
+                <select id="dailyStatusFilter" class="form-control" style="width: 160px;" onchange="filterDailyTable()">
+                  <option value="ALL">All Statuses</option>
+                  <option value="PRESENT">Present</option>
+                  <option value="OPEN">Currently Working</option>
+                  <option value="HALF_DAY">Half Day</option>
+                  <option value="ON_LEAVE">On Leave</option>
+                  <option value="ABSENT">Absent</option>
+                  <option value="UNMARKED">Not Marked</option>
+                </select>
+
+                <input type="text" id="dailyStaffSearch" class="form-control" placeholder="Search staff name..." style="width: 220px;" oninput="filterDailyTable()">
+              </div>
+              <div>
+                <button class="btn btn-secondary btn-sm" onclick="loadDailyAttendanceAndKpis()">🔄 Refresh</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Staff Name</th>
+                    <th>Date</th>
+                    <th>Check-In Time</th>
+                    <th>Check-Out Time</th>
+                    <th>Working Hours</th>
+                    <th>Status</th>
+                    <th>Customers Attended</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dailyAttendanceTableBody">
+                  <tr><td colspan="9" style="text-align: center; color: var(--text-dim); padding: 24px;">Loading daily attendance records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Monthly Reports & CSV Export -->
+        <div id="reportTab" class="tab-pane">
+          <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                <label style="font-size: 0.88rem; font-weight: 600; color: var(--text-dim);">From:</label>
+                <input type="date" id="repStartDate" class="form-control" style="width: 160px;" onchange="loadMonthlyReport()">
+                <label style="font-size: 0.88rem; font-weight: 600; color: var(--text-dim);">To:</label>
+                <input type="date" id="repEndDate" class="form-control" style="width: 160px;" onchange="loadMonthlyReport()">
+                
+                <button class="btn btn-secondary btn-sm" onclick="setReportPreset('this_month')">This Month</button>
+                <button class="btn btn-secondary btn-sm" onclick="setReportPreset('last_month')">Last Month</button>
+              </div>
+              <div>
+                <button class="btn btn-primary" onclick="exportMonthlyCsv()">
+                  📥 Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Staff Member</th>
+                    <th>Role</th>
+                    <th>Total Days</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Leave</th>
+                    <th>Half-Day</th>
+                    <th>Attendance %</th>
+                    <th>Working Hours</th>
+                    <th>Customers Attended</th>
+                  </tr>
+                </thead>
+                <tbody id="monthlyReportTableBody">
+                  <tr><td colspan="10" style="text-align: center; color: var(--text-dim); padding: 24px;">Select range to load report</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: My Attendance Records -->
+        <div id="myHistoryTab" class="tab-pane">
+          <div class="card">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 class="card-title">My Attendance Sessions</h2>
+              <button class="btn btn-secondary btn-sm" onclick="loadMyRecords()">🔄 Refresh</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Session Date</th>
+                    <th>Clock-In</th>
+                    <th>Clock-Out</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="myRecordsTableBody">
+                  <tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 24px;">Loading your attendance history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Mark / Correct Attendance Modal -->
+  <div id="markModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2 id="markModalTitle" class="card-title">Mark Staff Attendance</h2>
+        <button class="modal-close" onclick="closeModal('markModal')">×</button>
+      </div>
+      <div id="markModalError" style="display:none; margin: 12px 0; padding: 10px 14px; background: rgba(239,68,68,0.15); border: 1px solid var(--danger); border-radius: 6px; color: #fca5a5; font-size: 0.9rem;"></div>
+      <form id="markAttendanceForm">
+        <div class="form-group">
+          <label class="form-label">Staff Member *</label>
+          <select id="markStaffSelect" class="form-control" required></select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Working Date *</label>
+            <input type="date" id="markDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attendance Status *</label>
+            <select id="markStatus" class="form-control" required onchange="handleMarkStatusChange()">
+              <option value="PRESENT">PRESENT (Full Day)</option>
+              <option value="HALF_DAY">HALF_DAY (Half Shift)</option>
+              <option value="ON_LEAVE">ON_LEAVE (Approved)</option>
+              <option value="ABSENT">ABSENT</option>
+              <option value="OPEN">CURRENTLY_WORKING (Clocked In)</option>
+            </select>
+          </div>
+        </div>
+        <div id="timeFieldsContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Check-In Time</label>
+            <input type="datetime-local" id="markClockIn" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Check-Out Time</label>
+            <input type="datetime-local" id="markClockOut" class="form-control">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Customers Attended</label>
+            <input type="number" id="markCustomersCount" class="form-control" min="0" placeholder="Auto-calculated">
+            <small style="color: var(--text-dim); font-size: 0.75rem;">Leave empty for auto appointment count</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (Minutes)</label>
+            <input type="number" id="markDuration" class="form-control" min="0" placeholder="Auto from times">
+            <small style="color: var(--text-dim); font-size: 0.75rem;">e.g. 480 for 8 hrs (or auto)</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes / Remarks</label>
+          <textarea id="markNotes" class="form-control" rows="2" placeholder="Optional justification, shift details..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('markModal')">Cancel</button>
+          <button type="submit" id="btnSubmitMark" class="btn btn-primary">Save Attendance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Staff History & Stats Modal -->
+  <div id="historyModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <div>
+          <h2 id="histStaffName" class="card-title" style="margin-bottom: 2px;">Staff History</h2>
+          <span id="histStaffRole" style="color: var(--text-dim); font-size: 0.85rem;">Role & Email</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('historyModal')">×</button>
+      </div>
+      <input type="hidden" id="histStaffId">
+      
+      <div style="display: flex; gap: 12px; margin: 16px 0; align-items: center; flex-wrap: wrap;">
+        <label style="font-size: 0.85rem; color: var(--text-dim);">From:</label>
+        <input type="date" id="histStartDate" class="form-control" style="width: 150px;" onchange="loadStaffModalData()">
+        <label style="font-size: 0.85rem; color: var(--text-dim);">To:</label>
+        <input type="date" id="histEndDate" class="form-control" style="width: 150px;" onchange="loadStaffModalData()">
+        <button class="btn btn-secondary btn-sm" onclick="setHistPreset(30)">Last 30 Days</button>
+        <button class="btn btn-secondary btn-sm" onclick="setHistPreset(90)">Last 90 Days</button>
+      </div>
+
+      <div class="kpi-grid-7" style="margin-bottom: 20px;">
+        <div class="kpi-card"><span class="kpi-title">Present</span><span class="kpi-value" id="hStatPresent" style="color:#4ade80;">0</span></div>
+        <div class="kpi-card"><span class="kpi-title">Absent</span><span class="kpi-value" id="hStatAbsent" style="color:#f87171;">0</span></div>
+        <div class="kpi-card"><span class="kpi-title">Leave</span><span class="kpi-value" id="hStatLeave" style="color:#c084fc;">0</span></div>
+        <div class="kpi-card"><span class="kpi-title">Half Day</span><span class="kpi-value" id="hStatHalf" style="color:#fbbf24;">0</span></div>
+        <div class="kpi-card"><span class="kpi-title">Hours</span><span class="kpi-value" id="hStatHours">0</span></div>
+        <div class="kpi-card"><span class="kpi-title">Attendance</span><span class="kpi-value" id="hStatPct" style="color:#38bdf8;">0%</span></div>
+        <div class="kpi-card"><span class="kpi-title">Customers</span><span class="kpi-value" id="hStatCust">0</span></div>
+      </div>
+
+      <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Working Hours</th>
+              <th>Customers</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="histTableBody">
+            <tr><td colspan="7" style="text-align:center; color:var(--text-dim);">Loading history...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+        <button class="btn btn-secondary" onclick="closeModal('historyModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    let rawDailyList = [];
+    let staffMembersList = [];
+    let liveTickInterval = null;
+    let personalLiveInterval = null;
+    let myCurrentOpenClockIn = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('attendance');
+
+      // Set default date to today
+      const todayStr = new Date().toISOString().slice(0, 10);
+      document.getElementById('dailyDatePicker').value = todayStr;
+      
+      // Default monthly report to this month
+      setReportPreset('this_month', false);
+
+      await loadStaffMembersDropdown();
+      await checkMyLiveAttendance();
+      await loadDailyAttendanceAndKpis();
+
+      // Start global 1-second live ticker for any open sessions
+      if (liveTickInterval) clearInterval(liveTickInterval);
+      liveTickInterval = setInterval(updateLiveClocks, 1000);
+    });
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+
+      if (tabId === 'reportTab') {
+        loadMonthlyReport();
+      } else if (tabId === 'myHistoryTab') {
+        loadMyRecords();
+      } else {
+        loadDailyAttendanceAndKpis();
+      }
+    }
+
+    // 1. Fetch team members for dropdowns
+    async function loadStaffMembersDropdown() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/members`);
+        staffMembersList = res?.data || [];
+        const select = document.getElementById('markStaffSelect');
+        select.innerHTML = staffMembersList.map(m => `
+          <option value="${m.membershipId}">${API.escapeHtml(m.fullName)} (${m.role})</option>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load team members:', err);
+      }
+    }
+
+    // 2. Personal Live Session Bar
+    async function checkMyLiveAttendance() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/attendance/me`);
+        const records = res?.data || [];
+        const open = records.find(r => r.status === 'OPEN');
+
+        const badge = document.getElementById('myDutyBadge');
+        const timer = document.getElementById('myLiveTimer');
+        const title = document.getElementById('myStatusTitle');
+        const sub = document.getElementById('myStatusSubtitle');
+        const btnIn = document.getElementById('btnClockInPersonal');
+        const btnOut = document.getElementById('btnClockOutPersonal');
+
+        if (open) {
+          badge.className = 'badge badge-success';
+          badge.innerText = 'ON DUTY';
+          title.innerText = 'You are currently Clocked In';
+          sub.innerText = `Shift started at ${API.formatDateTime(open.clockInTime)}`;
+          btnIn.disabled = true;
+          btnOut.disabled = false;
+          myCurrentOpenClockIn = new Date(open.clockInTime).getTime();
+          timer.style.display = 'inline-block';
+
+          if (personalLiveInterval) clearInterval(personalLiveInterval);
+          personalLiveInterval = setInterval(() => {
+            const diffSec = Math.max(0, Math.floor((Date.now() - myCurrentOpenClockIn) / 1000));
+            const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+            const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+            const s = String(diffSec % 60).padStart(2, '0');
+            timer.innerText = `${h}:${m}:${s}`;
+          }, 1000);
+        } else {
+          badge.className = 'badge badge-warning';
+          badge.innerText = 'OFF DUTY';
+          title.innerText = 'You are currently Clocked Out';
+          sub.innerText = 'Ready to start your work session';
+          btnIn.disabled = false;
+          btnOut.disabled = true;
+          timer.style.display = 'none';
+          if (personalLiveInterval) clearInterval(personalLiveInterval);
+          myCurrentOpenClockIn = null;
+        }
+      } catch (err) {
+        console.error('Failed to load personal attendance:', err);
+      }
+    }
+
+    async function handleClockIn() {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/attendance/clock-in`, { method: 'POST' });
+        API.showToast('Clocked in successfully!', 'success');
+        await checkMyLiveAttendance();
+        await loadDailyAttendanceAndKpis();
+      } catch (err) {
+        API.showToast(err.message || 'Clock-in failed', 'error');
+      }
+    }
+
+    async function handleClockOut() {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/attendance/clock-out`, { method: 'POST' });
+        API.showToast('Clocked out successfully!', 'success');
+        await checkMyLiveAttendance();
+        await loadDailyAttendanceAndKpis();
+      } catch (err) {
+        API.showToast(err.message || 'Clock-out failed', 'error');
+      }
+    }
+
+    // 3. Load Dashboard KPIs & Daily Table
+    async function loadDailyAttendanceAndKpis() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const date = document.getElementById('dailyDatePicker').value || new Date().toISOString().slice(0, 10);
+
+      // Load KPIs
+      try {
+        const kpiRes = await API.request(`/businesses/${biz.businessId}/attendance/dashboard-summary?date=${date}`);
+        const k = kpiRes?.data;
+        if (k) {
+          document.getElementById('kpiTotalStaff').innerText = k.totalStaff;
+          document.getElementById('kpiPresentToday').innerText = k.presentToday;
+          document.getElementById('kpiAbsentToday').innerText = k.absentToday;
+          document.getElementById('kpiWorkingNowCount').innerText = k.workingNow;
+          document.getElementById('kpiOnLeaveToday').innerText = k.onLeaveToday;
+          document.getElementById('kpiTotalHours').innerText = `${k.totalHoursWorkedToday} hrs`;
+          document.getElementById('kpiCustomersAttended').innerText = k.customersAttendedToday;
+        }
+      } catch (err) {
+        console.error('Failed loading KPIs:', err);
+      }
+
+      // Load Daily Table
+      const tbody = document.getElementById('dailyAttendanceTableBody');
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/attendance/daily?date=${date}`);
+        rawDailyList = res?.data || [];
+        filterDailyTable();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger); padding: 24px;">
+          Failed loading daily records: ${API.escapeHtml(err.message || 'Error occurred')}<br>
+          <button class="btn btn-secondary btn-sm" onclick="loadDailyAttendanceAndKpis()" style="margin-top: 8px;">Retry</button>
+        </td></tr>`;
+      }
+    }
+
+    function filterDailyTable() {
+      const tbody = document.getElementById('dailyAttendanceTableBody');
+      const statusFilter = document.getElementById('dailyStatusFilter').value;
+      const search = document.getElementById('dailyStaffSearch').value.trim().toLowerCase();
+
+      let filtered = rawDailyList.filter(row => {
+        if (statusFilter !== 'ALL') {
+          if (statusFilter === 'UNMARKED' && row.status !== null) return false;
+          if (statusFilter !== 'UNMARKED' && row.status !== statusFilter) return false;
+        }
+        if (search) {
+          const matchName = (row.staffName || '').toLowerCase().includes(search);
+          const matchEmail = (row.email || '').toLowerCase().includes(search);
+          if (!matchName && !matchEmail) return false;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">No matching staff attendance records for this date</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => {
+        const statusBadge = getStatusBadgeHtml(r.status);
+        const inTimeStr = r.clockInTime ? API.formatDateTime(r.clockInTime) : '-';
+        
+        let outTimeStr = '-';
+        let durationStr = '-';
+        if (r.status === 'OPEN' && r.clockInTime) {
+          outTimeStr = `<span class="timer-badge live-counter" data-in="${new Date(r.clockInTime).getTime()}">Live...</span>`;
+          durationStr = `<span class="live-duration" data-in="${new Date(r.clockInTime).getTime()}" style="color: #38bdf8; font-weight:700;">Active</span>`;
+        } else if (r.clockOutTime) {
+          outTimeStr = API.formatDateTime(r.clockOutTime);
+          if (r.durationMinutes !== null && r.durationMinutes !== undefined) {
+            durationStr = `${Math.floor(r.durationMinutes / 60)}h ${r.durationMinutes % 60}m`;
+          }
+        } else if (r.status === 'HALF_DAY') {
+          durationStr = '4h 0m (Half Day)';
+        }
+
+        const custBadge = r.isManualCustomersCount
+          ? `<span class="badge-manual" title="Manually entered count">Manual</span>`
+          : `<span class="badge-auto" title="Automatically counted from completed appointments">Auto</span>`;
+
+        return `
+          <tr>
+            <td>
+              <strong>${API.escapeHtml(r.staffName)}</strong>
+              <div style="font-size: 0.78rem; color: var(--text-dim);">${API.escapeHtml(r.role)} · ${API.escapeHtml(r.email || '')}</div>
+            </td>
+            <td>${r.date || '-'}</td>
+            <td>${inTimeStr}</td>
+            <td>${outTimeStr}</td>
+            <td style="font-weight: 600;">${durationStr}</td>
+            <td>${statusBadge}</td>
+            <td style="font-weight: 700;">
+              ${r.customersAttended || 0} ${custBadge}
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-dim); max-width: 150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${API.escapeHtml(r.notes || '')}">
+              ${API.escapeHtml(r.notes || '-')}
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick='openMarkModalForStaff(${JSON.stringify(r)})'>Mark / Edit</button>
+                <button class="btn btn-secondary btn-sm" onclick="openHistoryModal(${r.staffMembershipId}, '${API.escapeHtml(r.staffName)}', '${API.escapeHtml(r.role)}')">History</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updateLiveClocks();
+    }
+
+    function getStatusBadgeHtml(status) {
+      if (!status) return `<span class="badge status-badge-unmarked">NOT MARKED</span>`;
+      switch(status) {
+        case 'PRESENT': return `<span class="badge status-badge-present">PRESENT</span>`;
+        case 'OPEN': return `<span class="badge status-badge-open"><span class="live-pulse"></span>WORKING NOW</span>`;
+        case 'HALF_DAY': return `<span class="badge status-badge-half">HALF DAY</span>`;
+        case 'ON_LEAVE': return `<span class="badge status-badge-leave">ON LEAVE</span>`;
+        case 'ABSENT': return `<span class="badge status-badge-absent">ABSENT</span>`;
+        case 'COMPLETED': return `<span class="badge status-badge-completed">COMPLETED</span>`;
+        case 'CORRECTED': return `<span class="badge status-badge-corrected">CORRECTED</span>`;
+        default: return `<span class="badge status-badge-present">${status}</span>`;
+      }
+    }
+
+    function updateLiveClocks() {
+      const now = Date.now();
+      document.querySelectorAll('.live-counter').forEach(el => {
+        const inMs = parseInt(el.getAttribute('data-in'));
+        if (!inMs) return;
+        const diff = Math.max(0, Math.floor((now - inMs) / 1000));
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        el.innerText = `⏱ ${h}h ${m}m ${s}s`;
+      });
+      document.querySelectorAll('.live-duration').forEach(el => {
+        const inMs = parseInt(el.getAttribute('data-in'));
+        if (!inMs) return;
+        const diff = Math.max(0, Math.floor((now - inMs) / 1000));
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        el.innerText = `${h}h ${m}m (Live)`;
+      });
+    }
+
+    // 4. Mark / Edit Modal
+    function openMarkModal() {
+      document.getElementById('markModalTitle').innerText = 'Mark Staff Attendance';
+      document.getElementById('markAttendanceForm').reset();
+      document.getElementById('markDate').value = document.getElementById('dailyDatePicker').value || new Date().toISOString().slice(0, 10);
+      document.getElementById('markStatus').value = 'PRESENT';
+      handleMarkStatusChange();
+      hideModalError('markModalError');
+      document.getElementById('markModal').classList.add('active');
+    }
+
+    function openMarkModalForStaff(r) {
+      document.getElementById('markModalTitle').innerText = `Edit Attendance: ${r.staffName}`;
+      document.getElementById('markStaffSelect').value = r.staffMembershipId;
+      document.getElementById('markDate').value = r.date || document.getElementById('dailyDatePicker').value;
+      document.getElementById('markStatus').value = r.status || 'PRESENT';
+      
+      if (r.clockInTime) {
+        const d = new Date(r.clockInTime);
+        document.getElementById('markClockIn').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      } else {
+        document.getElementById('markClockIn').value = '';
+      }
+
+      if (r.clockOutTime) {
+        const d = new Date(r.clockOutTime);
+        document.getElementById('markClockOut').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      } else {
+        document.getElementById('markClockOut').value = '';
+      }
+
+      document.getElementById('markCustomersCount').value = r.isManualCustomersCount ? r.customersAttended : '';
+      document.getElementById('markDuration').value = r.durationMinutes || '';
+      document.getElementById('markNotes').value = r.notes || '';
+
+      handleMarkStatusChange();
+      hideModalError('markModalError');
+      document.getElementById('markModal').classList.add('active');
+    }
+
+    function handleMarkStatusChange() {
+      const st = document.getElementById('markStatus').value;
+      const tc = document.getElementById('timeFieldsContainer');
+      if (st === 'ABSENT' || st === 'ON_LEAVE') {
+        tc.style.opacity = '0.4';
+      } else {
+        tc.style.opacity = '1';
+      }
+    }
+
+    document.getElementById('markAttendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      hideModalError('markModalError');
+
+      const staffMembershipId = parseInt(document.getElementById('markStaffSelect').value);
+      const date = document.getElementById('markDate').value;
+      const status = document.getElementById('markStatus').value;
+      const inVal = document.getElementById('markClockIn').value;
+      const outVal = document.getElementById('markClockOut').value;
+      const custVal = document.getElementById('markCustomersCount').value;
+      const durVal = document.getElementById('markDuration').value;
+      const notes = document.getElementById('markNotes').value.trim();
+
+      const payload = {
+        staffMembershipId,
+        date,
+        status,
+        clockInTime: inVal ? new Date(inVal).toISOString() : null,
+        clockOutTime: outVal ? new Date(outVal).toISOString() : null,
+        customersAttended: custVal !== '' ? parseInt(custVal) : null,
+        durationMinutes: durVal !== '' ? parseInt(durVal) : null,
+        notes: notes || null
+      };
+
+      const btn = document.getElementById('btnSubmitMark');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/attendance/mark`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        API.showToast('Attendance recorded successfully', 'success');
+        closeModal('markModal');
+        await loadDailyAttendanceAndKpis();
+        await checkMyLiveAttendance();
+      } catch (err) {
+        showModalError('markModalError', err.message || 'Failed to save attendance record');
+        API.showToast(err.message || 'Failed to save attendance', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Attendance';
+      }
+    });
+
+    // 5. Staff History & Stats Modal
+    function openHistoryModal(staffId, staffName, role) {
+      document.getElementById('histStaffId').value = staffId;
+      document.getElementById('histStaffName').innerText = staffName;
+      document.getElementById('histStaffRole').innerText = role;
+
+      const end = new Date().toISOString().slice(0, 10);
+      const start = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+      document.getElementById('histStartDate').value = start;
+      document.getElementById('histEndDate').value = end;
+
+      document.getElementById('historyModal').classList.add('active');
+      loadStaffModalData();
+    }
+
+    function setHistPreset(days) {
+      const end = new Date().toISOString().slice(0, 10);
+      const start = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      document.getElementById('histStartDate').value = start;
+      document.getElementById('histEndDate').value = end;
+      loadStaffModalData();
+    }
+
+    async function loadStaffModalData() {
+      const biz = API.storage.getActiveBusiness();
+      const staffId = document.getElementById('histStaffId').value;
+      const start = document.getElementById('histStartDate').value;
+      const end = document.getElementById('histEndDate').value;
+      if (!biz || !staffId) return;
+
+      const tbody = document.getElementById('histTableBody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:16px;">Loading history...</td></tr>`;
+
+      try {
+        // Load stats
+        const statsRes = await API.request(`/businesses/${biz.businessId}/attendance/staff/${staffId}/stats?startDate=${start}&endDate=${end}`);
+        const s = statsRes?.data;
+        if (s) {
+          document.getElementById('hStatPresent').innerText = s.daysPresent;
+          document.getElementById('hStatAbsent').innerText = s.daysAbsent;
+          document.getElementById('hStatLeave').innerText = s.daysOnLeave;
+          document.getElementById('hStatHalf').innerText = s.halfDays;
+          document.getElementById('hStatHours').innerText = `${s.totalHoursWorked}h`;
+          document.getElementById('hStatPct').innerText = `${s.attendancePercentage}%`;
+          document.getElementById('hStatCust').innerText = s.totalCustomersAttended;
+        }
+
+        // Load records
+        const histRes = await API.request(`/businesses/${biz.businessId}/attendance/staff/${staffId}/history?startDate=${start}&endDate=${end}`);
+        const list = histRes?.data || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">No records for this period</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(r => `
+          <tr>
+            <td><strong>${r.attendanceDate || '-'}</strong></td>
+            <td>${getStatusBadgeHtml(r.status)}</td>
+            <td>${r.clockInTime ? API.formatDateTime(r.clockInTime) : '-'}</td>
+            <td>${r.clockOutTime ? API.formatDateTime(r.clockOutTime) : '-'}</td>
+            <td>${r.durationMinutes !== null ? `${Math.floor(r.durationMinutes / 60)}h ${r.durationMinutes % 60}m` : '-'}</td>
+            <td>${r.customersAttended || 0}</td>
+            <td style="color:var(--text-dim); font-size:0.82rem;">${API.escapeHtml(r.notes || '-')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:16px;">Failed: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    // 6. Monthly Reports & CSV Export
+    function setReportPreset(preset, autoLoad = true) {
+      const now = new Date();
+      if (preset === 'this_month') {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        const end = now.toISOString().slice(0, 10);
+        document.getElementById('repStartDate').value = start;
+        document.getElementById('repEndDate').value = end;
+      } else if (preset === 'last_month') {
+        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 10);
+        const end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().slice(0, 10);
+        document.getElementById('repStartDate').value = start;
+        document.getElementById('repEndDate').value = end;
+      }
+      if (autoLoad) loadMonthlyReport();
+    }
+
+    async function loadMonthlyReport() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const start = document.getElementById('repStartDate').value;
+      const end = document.getElementById('repEndDate').value;
+      const tbody = document.getElementById('monthlyReportTableBody');
+
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-dim); padding: 24px;">Generating monthly report...</td></tr>`;
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/attendance/monthly-report?startDate=${start}&endDate=${end}`);
+        const list = res?.data || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">No team attendance data in selected date range</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(s => `
+          <tr>
+            <td>
+              <strong>${API.escapeHtml(s.staffName)}</strong>
+              <div style="font-size:0.75rem; color:var(--text-dim);">${API.escapeHtml(s.email)}</div>
+            </td>
+            <td><span class="badge badge-primary">${API.escapeHtml(s.role)}</span></td>
+            <td><strong>${s.totalDays}</strong></td>
+            <td style="color:#4ade80; font-weight:600;">${s.daysPresent}</td>
+            <td style="color:#f87171; font-weight:600;">${s.daysAbsent}</td>
+            <td style="color:#c084fc; font-weight:600;">${s.daysOnLeave}</td>
+            <td style="color:#fbbf24; font-weight:600;">${s.halfDays}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="flex:1; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                  <div style="width: ${Math.min(100, s.attendancePercentage)}%; height:100%; background: ${s.attendancePercentage >= 80 ? '#22c55e' : (s.attendancePercentage >= 50 ? '#f59e0b' : '#ef4444')};"></div>
+                </div>
+                <span style="font-weight:700; font-size:0.88rem;">${s.attendancePercentage}%</span>
+              </div>
+            </td>
+            <td style="font-weight:700;">${s.totalHoursWorked} hrs</td>
+            <td style="font-weight:700; color:#38bdf8;">${s.totalCustomersAttended}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--danger); padding: 24px;">Failed: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    async function exportMonthlyCsv() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const start = document.getElementById('repStartDate').value;
+      const end = document.getElementById('repEndDate').value;
+
+      try {
+        API.showToast('Preparing CSV report download...', 'success');
+        const token = API.storage.getToken();
+        const url = `${API.config.baseUrl}/businesses/${biz.businessId}/attendance/monthly-report/csv?startDate=${start}&endDate=${end}`;
+        
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed generating CSV');
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `attendance_report_${biz.businessId}_${start}_to_${end}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        API.showToast('CSV report downloaded!', 'success');
+      } catch (err) {
+        API.showToast(err.message || 'Failed downloading CSV', 'error');
+      }
+    }
+
+    // 7. My Records Tab
+    async function loadMyRecords() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const tbody = document.getElementById('myRecordsTableBody');
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/attendance/me`);
+        const list = res?.data || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">No personal attendance history yet</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(r => `
+          <tr>
+            <td><strong>${r.attendanceDate || '-'}</strong></td>
+            <td>${API.formatDateTime(r.clockInTime)}</td>
+            <td>${r.clockOutTime ? API.formatDateTime(r.clockOutTime) : '<span style="color:#38bdf8; font-weight:600;">In Progress</span>'}</td>
+            <td>${r.durationMinutes !== null ? `${Math.floor(r.durationMinutes / 60)}h ${r.durationMinutes % 60}m` : '-'}</td>
+            <td>${getStatusBadgeHtml(r.status)}</td>
+            <td style="color:var(--text-dim); font-size:0.85rem;">${API.escapeHtml(r.notes || '-')}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 24px;">Failed: ${API.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function showModalError(containerId, msg) {
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.innerText = msg;
+        el.style.display = 'block';
+      }
+    }
+
+    function hideModalError(containerId) {
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.innerText = '';
+        el.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

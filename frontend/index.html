@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VyaparOS — One platform. Your entire business.</title>
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .landing-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .landing-nav-logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .landing-nav-logo img {
+      height: 42px;
+      width: auto;
+    }
+    .hero-section {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--primary-light);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius-full);
+      color: #818cf8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .hero-badge img {
+      width: 18px;
+      height: 18px;
+    }
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 40px auto 80px;
+      padding: 0 24px;
+    }
+  </style>
+</head>
+<body>
+  <header class="landing-nav">
+    <a href="index.html" class="landing-nav-logo">
+      <img src="assets/brand/logo.svg" alt="VyaparOS Logo">
+    </a>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="login.html" class="btn btn-secondary btn-sm">Sign In</a>
+      <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </header>
+
+  <main class="hero-section">
+    <div class="hero-badge">
+      <img src="assets/brand/favicon.svg" alt="VyaparOS Icon">
+      <span>Multi-Tenant Business Operating System</span>
+    </div>
+    <h1 class="hero-title">
+      One platform. <span>Your entire business.</span>
+    </h1>
+    <p class="hero-desc">
+      Manage appointments, billing, inventory, staff attendance, customer records, and real-time financial analytics from a single unified command center.
+    </p>
+    <div class="hero-cta">
+      <a href="login.html" class="btn btn-primary" style="padding: 14px 32px; font-size: 1.05rem;">
+        Launch Workspace →
+      </a>
+      <a href="register.html" class="btn btn-secondary" style="padding: 14px 28px; font-size: 1.05rem;">
+        Create Business Account
+      </a>
+    </div>
+  </main>
+
+  <section class="feature-grid">
+    <div class="card">
+      <div style="font-size: 2rem; margin-bottom: 12px;">📅</div>
+      <h3 class="card-title" style="margin-bottom: 8px;">Smart Scheduling</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Conflict-free appointment booking with staff collision detection and price snapshotting.
+      </p>
+    </div>
+    <div class="card">
+      <div style="font-size: 2rem; margin-bottom: 12px;">🧾</div>
+      <h3 class="card-title" style="margin-bottom: 8px;">Billing & Payments</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        High-precision invoicing, partial payments, tax calculations, and printable PDF receipts.
+      </p>
+    </div>
+    <div class="card">
+      <div style="font-size: 2rem; margin-bottom: 12px;">📦</div>
+      <h3 class="card-title" style="margin-bottom: 8px;">Inventory Control</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Real-time stock movement tracking, negative stock prevention, and low-stock reorder alerts.
+      </p>
+    </div>
+    <div class="card">
+      <div style="font-size: 2rem; margin-bottom: 12px;">⏱️</div>
+      <h3 class="card-title" style="margin-bottom: 8px;">Staff Attendance</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Server-timestamped clock-in/out, work-hour metrics, and auditable admin corrections.
+      </p>
+    </div>
+  </section>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    // Auto redirect to dashboard if already authenticated
+    if (API.storage.getToken() && API.storage.getActiveBusiness()) {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

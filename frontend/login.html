@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="brand-logo" style="justify-content: center; margin-bottom: 16px;">
+        <img src="assets/brand/logo.svg" alt="VyaparOS" style="height: 48px; width: auto;">
+      </a>
+      <h1>Welcome Back</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Log in to access your business workspace</p>
+    </div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-control" placeholder="name@company.com" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+        Sign In to Workspace
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="register.html">Create one</a>
+    </div>
+
+    <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 12px; text-align: center;">
+      <button type="button" id="toggleApiBtn" style="background:none; border:none; color:var(--text-dim); font-size:0.75rem; cursor:pointer;" onclick="toggleApiConfig()">
+        ⚙️ Backend API: <span id="currentApiDisplay">loading...</span>
+      </button>
+      <div id="apiConfigBox" style="display:none; margin-top:8px;">
+        <input type="text" id="customApiUrl" class="form-control" style="font-size:0.8rem; padding:6px 10px;" placeholder="e.g. http://localhost:8080/api">
+        <button type="button" class="btn btn-secondary btn-sm" style="width:100%; margin-top:6px;" onclick="saveCustomApiUrl()">Update API URL</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Display current backend URL
+    document.getElementById('currentApiDisplay').innerText = API.config.baseUrl;
+    document.getElementById('customApiUrl').value = API.config.baseUrl;
+
+    function toggleApiConfig() {
+      const box = document.getElementById('apiConfigBox');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function saveCustomApiUrl() {
+      const url = document.getElementById('customApiUrl').value.trim();
+      if (url) {
+        API.setApiUrl(url);
+        document.getElementById('currentApiDisplay').innerText = API.config.baseUrl;
+        toggleApiConfig();
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Signing In...';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await API.request('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res && res.data && res.data.token) {
+          API.storage.setToken(res.data.token);
+          API.storage.setUser(res.data.user);
+
+          const memberships = res.data.memberships || [];
+          const base = API.getBasePath();
+          if (memberships.length > 0) {
+            API.storage.setActiveBusiness(memberships[0]);
+            API.showToast('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+              window.location.href = `${base}/dashboard.html`;
+            }, 600);
+          } else {
+            API.showToast('Please create your first business workspace', 'info');
+            setTimeout(() => {
+              window.location.href = `${base}/settings/index.html?setup=true`;
+            }, 600);
+          }
+        }
+      } catch (err) {
+        API.showToast(err.message || 'Invalid email or password', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In to Workspace';
+      }
+    });
+  </script>
+</body>
+</html>

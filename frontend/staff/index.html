@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff & Team Management — VyaparOS</title>
+  <meta name="description" content="Manage workspace staff members, assign role permissions, and invite team members on VyaparOS.">
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .role-desc {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .modal-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .modal-grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+    .pill-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #34d399;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .pill-inactive {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #f87171;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .pill-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #fbbf24;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <div>
+          <h1 class="page-title" style="font-size: 1.35rem; margin-bottom: 2px;">Staff & Team</h1>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Manage team members, roles, and pending invitations</p>
+        </div>
+        <div class="top-actions">
+          <button id="addStaffBtn" class="btn btn-primary" onclick="openAddMemberModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add Team Member</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- Live Real Metrics Grid -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+          <div class="stat-card">
+            <span class="stat-label">Total Team Members</span>
+            <span class="stat-value" id="statTotalMembers">-</span>
+            <span class="stat-subtitle">Registered in this workspace</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Active Staff</span>
+            <span class="stat-value" id="statActiveMembers" style="color: #34d399;">-</span>
+            <span class="stat-subtitle">Authorized for workspace access</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Pending Invitations</span>
+            <span class="stat-value" id="statPendingInvites" style="color: #60a5fa;">-</span>
+            <span class="stat-subtitle">Awaiting onboarding acceptance</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar">
+          <button id="tabMembers" class="tab-item active" onclick="switchTab('members')">
+            <span>Active Team Members</span>
+            <span class="tab-badge" id="badgeMembersCount">0</span>
+          </button>
+          <button id="tabInvitations" class="tab-item" onclick="switchTab('invitations')">
+            <span>Pending Invitations</span>
+            <span class="tab-badge" id="badgeInvitesCount">0</span>
+          </button>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="filter-bar">
+          <div class="search-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name, email, or role..." oninput="handleSearch()">
+          </div>
+
+          <div class="filter-controls">
+            <select id="roleFilter" class="form-control" style="width: auto; min-width: 140px;" onchange="handleFilter()">
+              <option value="ALL">All Roles</option>
+              <option value="OWNER">Owner</option>
+              <option value="ADMIN">Admin</option>
+              <option value="STAFF">Staff</option>
+            </select>
+
+            <select id="statusFilter" class="form-control" style="width: auto; min-width: 140px;" onchange="handleFilter()">
+              <option value="ALL">All Status</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tab Content 1: Members Table -->
+        <div id="sectionMembers" class="card" style="padding: 0; overflow: hidden;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Team Member</th>
+                  <th>Contact Info</th>
+                  <th>Workspace Role</th>
+                  <th>Department / Title</th>
+                  <th>Joined Date</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="membersTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 36px;">Loading team members...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="membersEmptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="empty-state-title">No team members found</div>
+            <div class="empty-state-desc">No members match your current filter criteria or none have been added yet.</div>
+            <button class="btn btn-primary btn-sm" onclick="openAddMemberModal()">+ Add Team Member</button>
+          </div>
+        </div>
+
+        <!-- Tab Content 2: Invitations Table -->
+        <div id="sectionInvitations" class="card" style="padding: 0; overflow: hidden; display: none;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invited Person</th>
+                  <th>Contact Email</th>
+                  <th>Intended Role</th>
+                  <th>Department / Title</th>
+                  <th>Sent Date</th>
+                  <th>Invitation Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invitationsTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 36px;">Loading invitations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="invitationsEmptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+            </div>
+            <div class="empty-state-title">No pending invitations</div>
+            <div class="empty-state-desc">When you invite new staff who don't have accounts yet, their pending onboarding invites appear here.</div>
+            <button class="btn btn-primary btn-sm" onclick="openAddMemberModal()">+ Send New Invite</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add Member Modal -->
+  <div id="memberModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h2 class="card-title" style="font-size: 1.15rem; font-weight: 700;">Add Team Member</h2>
+        <button class="modal-close" onclick="closeModal('memberModal')">×</button>
+      </div>
+
+      <div class="info-callout">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <div>
+          <strong>Automatic Onboarding:</strong> If the employee already has a VyaparOS account, they will be added directly. If they are new, a secure invitation link will be created for them to register and join.
+        </div>
+      </div>
+
+      <form id="memberForm">
+        <div class="modal-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="memFullName">Full Name *</label>
+            <input type="text" id="memFullName" class="form-control" required placeholder="e.g. Priya Sharma">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="memEmail">Work Email Address *</label>
+            <input type="email" id="memEmail" class="form-control" required placeholder="priya@company.com">
+          </div>
+        </div>
+
+        <div class="modal-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="memPhone">Phone Number</label>
+            <input type="tel" id="memPhone" class="form-control" placeholder="e.g. +91 9876543210">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="memRole">Workspace Role *</label>
+            <select id="memRole" class="form-control" required>
+              <option value="STAFF">Staff (Appointments, Catalog, Attendance)</option>
+              <option value="ADMIN">Admin (Manage Team, Stock, Billing, Reports)</option>
+              <option value="OWNER">Owner (Full Business Control)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="memJobTitle">Job Title / Position</label>
+            <input type="text" id="memJobTitle" class="form-control" placeholder="e.g. Senior Stylist, Cashier">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="memDepartment">Department</label>
+            <input type="text" id="memDepartment" class="form-control" placeholder="e.g. Operations, Sales, Finance">
+          </div>
+        </div>
+
+        <div id="memberFormError" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 16px;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+          <button type="submit" id="submitMemberBtn" class="btn btn-primary">
+            <span>Add Member / Send Invite</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invitation Created Modal (with 1-click Copy Link) -->
+  <div id="inviteSuccessModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2 class="card-title" style="font-size: 1.15rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          Invitation Created!
+        </h2>
+        <button class="modal-close" onclick="closeModal('inviteSuccessModal')">×</button>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px;">
+        An invitation was generated for <strong id="successInvEmail" style="color: #fff;"></strong> with role <strong id="successInvRole" style="color: #818cf8;"></strong>. Share the secure link below with your employee to complete their setup:
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Employee Onboarding Link</label>
+        <div class="copy-link-box">
+          <input type="text" id="inviteLinkInput" class="copy-link-input" readonly>
+          <button id="copyInviteBtn" class="btn btn-primary btn-sm" onclick="copyInviteLink()">
+            Copy Link
+          </button>
+        </div>
+        <small style="color: var(--text-dim); font-size: 0.75rem; margin-top: 6px; display: block;">
+          This secure link expires in 7 days and can only be used once.
+        </small>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+        <button class="btn btn-secondary" onclick="closeModal('inviteSuccessModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Member Modal -->
+  <div id="editMemberModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="card-title" style="font-size: 1.15rem; font-weight: 700;">Edit Member Details</h2>
+        <button class="modal-close" onclick="closeModal('editMemberModal')">×</button>
+      </div>
+      <form id="editMemberForm">
+        <input type="hidden" id="editMembershipId">
+        <div class="form-group">
+          <label class="form-label">Staff Member</label>
+          <input type="text" id="editMemberName" class="form-control" readonly style="opacity: 0.8;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role in Workspace</label>
+          <select id="editMemberRole" class="form-control" required>
+            <option value="STAFF">Staff (Appointments, Clock-in, View Catalog)</option>
+            <option value="ADMIN">Admin (Full Management & Reports)</option>
+            <option value="OWNER">Owner (Workspace Ownership)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title</label>
+          <input type="text" id="editJobTitle" class="form-control" placeholder="e.g. Store Manager">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input type="text" id="editDepartment" class="form-control" placeholder="e.g. Sales">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('editMemberModal')">Cancel</button>
+          <button type="submit" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog Modal -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h2 id="confirmTitle" class="card-title" style="font-size: 1.15rem; font-weight: 700;">Confirm Action</h2>
+        <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+      </div>
+      <p id="confirmMessage" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;"></p>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+        <button type="button" id="confirmActionBtn" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    let allMembers = [];
+    let allInvitations = [];
+    let currentTab = 'members';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('staff');
+      loadAllData();
+    });
+
+    async function loadAllData() {
+      await Promise.all([loadMembers(), loadInvitations()]);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabMembers = document.getElementById('tabMembers');
+      const tabInvitations = document.getElementById('tabInvitations');
+      const secMembers = document.getElementById('sectionMembers');
+      const secInvitations = document.getElementById('sectionInvitations');
+
+      if (tab === 'members') {
+        tabMembers.classList.add('active');
+        tabInvitations.classList.remove('active');
+        secMembers.style.display = 'block';
+        secInvitations.style.display = 'none';
+      } else {
+        tabMembers.classList.remove('active');
+        tabInvitations.classList.add('active');
+        secMembers.style.display = 'none';
+        secInvitations.style.display = 'block';
+      }
+      renderFilteredData();
+    }
+
+    async function loadMembers() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/members`);
+        allMembers = res?.data || [];
+        updateMetrics();
+        renderMembers();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    async function loadInvitations() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/invitations`);
+        allInvitations = res?.data || [];
+        updateMetrics();
+        renderInvitations();
+      } catch (err) {
+        console.warn('Could not load invitations:', err.message);
+      }
+    }
+
+    function updateMetrics() {
+      const totalMembers = allMembers.length;
+      const activeMembers = allMembers.filter(m => m.active).length;
+      const pendingInvites = allInvitations.filter(i => i.status === 'PENDING').length;
+
+      document.getElementById('statTotalMembers').textContent = totalMembers;
+      document.getElementById('statActiveMembers').textContent = activeMembers;
+      document.getElementById('statPendingInvites').textContent = pendingInvites;
+
+      document.getElementById('badgeMembersCount').textContent = totalMembers;
+      document.getElementById('badgeInvitesCount').textContent = pendingInvites;
+    }
+
+    function handleSearch() {
+      renderFilteredData();
+    }
+
+    function handleFilter() {
+      renderFilteredData();
+    }
+
+    function renderFilteredData() {
+      if (currentTab === 'members') {
+        renderMembers();
+      } else {
+        renderInvitations();
+      }
+    }
+
+    function getInitials(name) {
+      if (!name) return 'U';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+
+    function renderMembers() {
+      const tbody = document.getElementById('membersTableBody');
+      const emptyState = document.getElementById('membersEmptyState');
+      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const roleFilter = document.getElementById('roleFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      let filtered = allMembers.filter(m => {
+        const matchQuery = !query || 
+          (m.fullName && m.fullName.toLowerCase().includes(query)) ||
+          (m.email && m.email.toLowerCase().includes(query)) ||
+          (m.role && m.role.toLowerCase().includes(query)) ||
+          (m.jobTitle && m.jobTitle.toLowerCase().includes(query));
+
+        const matchRole = roleFilter === 'ALL' || m.role === roleFilter;
+        const matchStatus = statusFilter === 'ALL' || 
+          (statusFilter === 'ACTIVE' && m.active) || 
+          (statusFilter === 'INACTIVE' && !m.active);
+
+        return matchQuery && matchRole && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tbody.innerHTML = filtered.map(m => `
+        <tr>
+          <td>
+            <div class="member-cell">
+              <div class="avatar-badge">${getInitials(m.fullName)}</div>
+              <div>
+                <span class="member-name">${escapeHtml(m.fullName)}</span>
+                <span class="member-sub">${m.role === 'OWNER' ? 'Workspace Creator' : (m.jobTitle || 'Team Member')}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 0.88rem; color: #f1f5f9;">${escapeHtml(m.email)}</div>
+            <div style="font-size: 0.78rem; color: var(--text-dim);">${m.phone ? escapeHtml(m.phone) : 'No phone recorded'}</div>
+          </td>
+          <td>
+            <span class="badge ${m.role === 'OWNER' ? 'badge-primary' : (m.role === 'ADMIN' ? 'badge-warning' : 'badge-success')}">
+              ${m.role}
+            </span>
+          </td>
+          <td>
+            <div style="font-size: 0.88rem;">${m.jobTitle ? escapeHtml(m.jobTitle) : '<span style="color:var(--text-dim);">-</span>'}</div>
+            <div style="font-size: 0.78rem; color: var(--text-dim);">${m.department ? escapeHtml(m.department) : ''}</div>
+          </td>
+          <td style="font-size: 0.85rem; color: var(--text-muted);">${API.formatDate(m.joinedAt)}</td>
+          <td>
+            <span class="${m.active ? 'pill-active' : 'pill-inactive'}">
+              <span class="dot"></span> ${m.active ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <div class="action-btn-group">
+              <button class="btn btn-secondary btn-sm" onclick="openEditMemberModal(${m.membershipId})" title="Edit Details">
+                Edit
+              </button>
+              ${m.role !== 'OWNER' ? `
+                <button class="btn ${m.active ? 'btn-danger' : 'btn-success'} btn-sm" onclick="confirmToggleMember(${m.membershipId}, '${escapeHtml(m.fullName)}', ${!m.active})">
+                  ${m.active ? 'Deactivate' : 'Reactivate'}
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderInvitations() {
+      const tbody = document.getElementById('invitationsTableBody');
+      const emptyState = document.getElementById('invitationsEmptyState');
+      const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const roleFilter = document.getElementById('roleFilter').value;
+
+      let filtered = allInvitations.filter(i => {
+        const matchQuery = !query || 
+          (i.fullName && i.fullName.toLowerCase().includes(query)) ||
+          (i.email && i.email.toLowerCase().includes(query)) ||
+          (i.role && i.role.toLowerCase().includes(query));
+
+        const matchRole = roleFilter === 'ALL' || i.role === roleFilter;
+        return matchQuery && matchRole;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tbody.innerHTML = filtered.map(i => {
+        const isPending = i.status === 'PENDING';
+        const isExpired = i.status === 'EXPIRED';
+        const isRevoked = i.status === 'REVOKED';
+        const isAccepted = i.status === 'ACCEPTED';
+
+        let statusClass = 'pill-pending';
+        let statusLabel = 'Pending';
+        if (isAccepted) { statusClass = 'pill-active'; statusLabel = 'Accepted'; }
+        else if (isExpired) { statusClass = 'pill-inactive'; statusLabel = 'Expired'; }
+        else if (isRevoked) { statusClass = 'pill-inactive'; statusLabel = 'Revoked'; }
+
+        return `
+          <tr>
+            <td>
+              <div class="member-cell">
+                <div class="avatar-badge" style="background: rgba(255, 255, 255, 0.05);">${getInitials(i.fullName)}</div>
+                <div>
+                  <span class="member-name">${escapeHtml(i.fullName)}</span>
+                  <span class="member-sub">Invited by ${escapeHtml(i.invitedByName || 'Owner')}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="font-size: 0.88rem; color: #f1f5f9;">${escapeHtml(i.email)}</div>
+              <div style="font-size: 0.78rem; color: var(--text-dim);">${i.phone ? escapeHtml(i.phone) : 'No phone'}</div>
+            </td>
+            <td>
+              <span class="badge ${i.role === 'OWNER' ? 'badge-primary' : (i.role === 'ADMIN' ? 'badge-warning' : 'badge-success')}">
+                ${i.role}
+              </span>
+            </td>
+            <td>
+              <div style="font-size: 0.88rem;">${i.jobTitle ? escapeHtml(i.jobTitle) : '<span style="color:var(--text-dim);">-</span>'}</div>
+              <div style="font-size: 0.78rem; color: var(--text-dim);">${i.department ? escapeHtml(i.department) : ''}</div>
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${API.formatDate(i.createdAt)}</td>
+            <td>
+              <span class="${statusClass}">
+                <span class="dot"></span> ${statusLabel}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <div class="action-btn-group">
+                ${isPending ? `
+                  <button class="btn btn-secondary btn-sm" onclick="showInviteLinkModal('${escapeHtml(i.email)}', '${i.role}', '${i.invitationToken}')" title="Copy Invite Link">
+                    Copy Link
+                  </button>
+                  <button class="btn btn-secondary btn-sm" onclick="resendInvite(${i.id})" title="Refresh & Resend">
+                    Resend
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="confirmRevokeInvite(${i.id}, '${escapeHtml(i.email)}')" title="Revoke Invite">
+                    Revoke
+                  </button>
+                ` : (isExpired ? `
+                  <button class="btn btn-secondary btn-sm" onclick="resendInvite(${i.id})">
+                    Re-invite
+                  </button>
+                ` : '<span style="color: var(--text-dim); font-size: 0.8rem;">Completed</span>')}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openAddMemberModal() {
+      document.getElementById('memberForm').reset();
+      document.getElementById('memberFormError').style.display = 'none';
+      openModal('memberModal');
+    }
+
+    document.getElementById('memberForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const submitBtn = document.getElementById('submitMemberBtn');
+      const errBox = document.getElementById('memberFormError');
+      errBox.style.display = 'none';
+
+      const payload = {
+        fullName: document.getElementById('memFullName').value.trim(),
+        email: document.getElementById('memEmail').value.trim(),
+        phone: document.getElementById('memPhone').value.trim() || null,
+        role: document.getElementById('memRole').value,
+        jobTitle: document.getElementById('memJobTitle').value.trim() || null,
+        department: document.getElementById('memDepartment').value.trim() || null
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Saving...</span>';
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/members`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        closeModal('memberModal');
+        await loadAllData();
+
+        if (res?.data?.actionType === 'INVITED') {
+          showInviteLinkModal(
+            payload.email,
+            payload.role,
+            res.data.invitation.invitationToken
+          );
+        } else {
+          API.showToast('Staff member added directly to workspace team!', 'success');
+        }
+      } catch (err) {
+        errBox.textContent = err.message || 'Failed to add member.';
+        errBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Add Member / Send Invite</span>';
+      }
+    });
+
+    function showInviteLinkModal(email, role, token) {
+      document.getElementById('successInvEmail').textContent = email;
+      document.getElementById('successInvRole').textContent = role;
+      
+      const fullUrl = window.location.origin + '/staff/accept-invite.html?token=' + encodeURIComponent(token);
+      document.getElementById('inviteLinkInput').value = fullUrl;
+      
+      openModal('inviteSuccessModal');
+    }
+
+    function copyInviteLink() {
+      const input = document.getElementById('inviteLinkInput');
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btn = document.getElementById('copyInviteBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+        API.showToast('Invitation link copied to clipboard!', 'success');
+      }).catch(() => {
+        API.showToast('Failed to copy. Please manually copy the link.', 'warning');
+      });
+    }
+
+    function openEditMemberModal(membershipId) {
+      const member = allMembers.find(m => m.membershipId === membershipId);
+      if (!member) return;
+
+      document.getElementById('editMembershipId').value = membershipId;
+      document.getElementById('editMemberName').value = member.fullName + ' (' + member.email + ')';
+      document.getElementById('editMemberRole').value = member.role;
+      document.getElementById('editJobTitle').value = member.jobTitle || '';
+      document.getElementById('editDepartment').value = member.department || '';
+
+      openModal('editMemberModal');
+    }
+
+    document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const membershipId = document.getElementById('editMembershipId').value;
+      const saveBtn = document.getElementById('saveEditBtn');
+
+      const payload = {
+        role: document.getElementById('editMemberRole').value,
+        jobTitle: document.getElementById('editJobTitle').value.trim() || null,
+        department: document.getElementById('editDepartment').value.trim() || null
+      };
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/members/${membershipId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+
+        API.showToast('Member details updated successfully!', 'success');
+        closeModal('editMemberModal');
+        loadMembers();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+      }
+    });
+
+    function confirmToggleMember(membershipId, name, newActiveState) {
+      const action = newActiveState ? 'reactivate' : 'deactivate';
+      document.getElementById('confirmTitle').textContent = newActiveState ? 'Reactivate Team Member' : 'Deactivate Team Member';
+      document.getElementById('confirmMessage').textContent = `Are you sure you want to ${action} ${name}? Deactivating revokes workspace access while preserving all historical records, appointments, and audit logs.`;
+      
+      const confirmBtn = document.getElementById('confirmActionBtn');
+      confirmBtn.className = newActiveState ? 'btn btn-success' : 'btn btn-danger';
+      confirmBtn.textContent = newActiveState ? 'Reactivate Member' : 'Deactivate Member';
+      confirmBtn.onclick = async () => {
+        closeModal('confirmModal');
+        await toggleMemberActive(membershipId, newActiveState);
+      };
+
+      openModal('confirmModal');
+    }
+
+    async function toggleMemberActive(membershipId, newActiveState) {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/members/${membershipId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ active: newActiveState })
+        });
+        API.showToast(newActiveState ? 'Member reactivated!' : 'Member deactivated.', 'success');
+        loadMembers();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    async function resendInvite(invitationId) {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/invitations/${invitationId}/resend`, {
+          method: 'POST'
+        });
+        API.showToast('Invitation refreshed and validity extended!', 'success');
+        await loadInvitations();
+        if (res?.data?.invitationToken) {
+          showInviteLinkModal(res.data.email, res.data.role, res.data.invitationToken);
+        }
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    function confirmRevokeInvite(invitationId, email) {
+      document.getElementById('confirmTitle').textContent = 'Revoke Staff Invitation';
+      document.getElementById('confirmMessage').textContent = `Are you sure you want to revoke the invitation for ${email}? The onboarding link will immediately become invalid.`;
+
+      const confirmBtn = document.getElementById('confirmActionBtn');
+      confirmBtn.className = 'btn btn-danger';
+      confirmBtn.textContent = 'Revoke Invitation';
+      confirmBtn.onclick = async () => {
+        closeModal('confirmModal');
+        await revokeInvite(invitationId);
+      };
+
+      openModal('confirmModal');
+    }
+
+    async function revokeInvite(invitationId) {
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/invitations/${invitationId}`, {
+          method: 'DELETE'
+        });
+        API.showToast('Invitation revoked.', 'success');
+        loadInvitations();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>

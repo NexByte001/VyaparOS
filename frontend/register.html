@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <a href="index.html" class="brand-logo" style="justify-content: center; margin-bottom: 16px;">
+        <img src="assets/brand/logo.svg" alt="VyaparOS" style="height: 48px; width: auto;">
+      </a>
+      <h1>Create Account</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Start managing your business on VyaparOS</p>
+    </div>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" id="fullName" class="form-control" placeholder="Rajesh Kumar" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-control" placeholder="name@company.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number (Optional)</label>
+        <input type="tel" id="phone" class="form-control" placeholder="9876543210">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="At least 6 characters" minlength="6" required>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+        Create Business Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Sign in</a>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script>
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating Account...';
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await API.request('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ fullName, email, phone, password })
+        });
+
+        if (res && res.data && res.data.token) {
+          API.storage.setToken(res.data.token);
+          API.storage.setUser(res.data.user);
+          API.showToast('Account created! Now setup your business workspace', 'success');
+          const base = API.getBasePath();
+          setTimeout(() => {
+            window.location.href = `${base}/settings/index.html?setup=true`;
+          }, 800);
+        }
+      } catch (err) {
+        API.showToast(err.message || 'Registration failed', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Create Business Account';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing & Invoices — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Invoices & Billing</h1>
+        <div class="top-actions">
+          <button class="btn btn-primary" onclick="openCreateInvoiceModal()">
+            <span>+</span> Create Invoice
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <div class="card" style="margin-bottom: 24px;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+            <div>
+              <label class="form-label" style="margin-bottom: 2px;">Filter Status</label>
+              <select id="filterStatus" class="form-control" onchange="loadInvoices()">
+                <option value="">All Statuses</option>
+                <option value="ISSUED">Issued</option>
+                <option value="PARTIALLY_PAID">Partially Paid</option>
+                <option value="PAID">Paid</option>
+                <option value="VOID">Void</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total Amount</th>
+                  <th>Paid Amount</th>
+                  <th>Balance Due</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoicesTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-dim);">Loading invoices...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create Invoice Modal -->
+  <div id="invoiceModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-header">
+        <h2 class="card-title">Create New Invoice</h2>
+        <button class="modal-close" onclick="closeModal('invoiceModal')">×</button>
+      </div>
+      <form id="invoiceForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Customer (Optional)</label>
+            <select id="invCustomer" class="form-control">
+              <option value="">Walk-in Customer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Invoice Date *</label>
+            <input type="date" id="invDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Line Items *</label>
+          <div id="lineItemsContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+          <button type="button" class="btn btn-secondary btn-sm" style="margin-top: 10px;" onclick="addLineItemRow()">
+            + Add Line Item
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Discount Amount (₹)</label>
+            <input type="number" id="invDiscount" class="form-control" min="0" step="0.01" value="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <input type="text" id="invNotes" class="form-control" placeholder="Payment terms, thank you note, etc.">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('invoiceModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate & Issue Invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Payment Modal -->
+  <div id="paymentModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="card-title">Record Payment</h2>
+        <button class="modal-close" onclick="closeModal('paymentModal')">×</button>
+      </div>
+      <form id="paymentForm">
+        <input type="hidden" id="payInvoiceId">
+        <div class="form-group">
+          <label class="form-label">Remaining Balance Due</label>
+          <input type="text" id="payBalanceDue" class="form-control" readonly
+            style="background: rgba(0,0,0,0.2); font-weight:700; color:var(--warning);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Amount (₹) *</label>
+          <input type="number" id="payAmount" class="form-control" min="0.01" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Method *</label>
+          <select id="payMethod" class="form-control" required>
+            <option value="UPI">UPI (GooglePay / PhonePe / Paytm)</option>
+            <option value="CASH">Cash</option>
+            <option value="CARD">Credit / Debit Card</option>
+            <option value="BANK_TRANSFER">Net Banking / NEFT</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Transaction Reference (Optional)</label>
+          <input type="text" id="payRef" class="form-control" placeholder="e.g. UPI Ref / Card Last 4">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('paymentModal')">Cancel</button>
+          <button type="submit" class="btn btn-success">Record Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('billing');
+      await loadInvoices();
+      await loadCustomers();
+    });
+
+    async function loadInvoices() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const status = document.getElementById('filterStatus').value;
+      const tbody = document.getElementById('invoicesTableBody');
+
+      let q = `/businesses/${biz.businessId}/invoices?size=50`;
+      if (status) q += `&status=${status}`;
+
+      try {
+        const res = await API.request(q);
+        const list = res?.data?.content || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No invoices found</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(inv => `
+          <tr>
+            <td><strong>${inv.invoiceNumber}</strong></td>
+            <td>${inv.customer ? inv.customer.name : 'Walk-in'}</td>
+            <td>${API.formatDate(inv.invoiceDate)}</td>
+            <td style="font-weight: 700;">${API.formatCurrency(inv.totalAmount, biz.currency)}</td>
+            <td style="color: var(--success);">${API.formatCurrency(inv.paidAmount, biz.currency)}</td>
+            <td style="color: ${inv.balanceDue > 0 ? 'var(--danger)' : 'var(--text-dim)'}; font-weight:700;">${API.formatCurrency(inv.balanceDue, biz.currency)}</td>
+            <td>
+              <span class="badge ${getInvoiceBadge(inv.status)}">${inv.status}</span>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <a href="invoice-view.html?id=${inv.id}" class="btn btn-secondary btn-sm" target="_blank">Print</a>
+                ${inv.balanceDue > 0 && inv.status !== 'VOID' ? `
+                  <button class="btn btn-success btn-sm" onclick="openPaymentModal(${inv.id}, ${inv.balanceDue})">Pay</button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        API.showToast(err.message || 'Failed to load invoices', 'error');
+      }
+    }
+
+    function getInvoiceBadge(status) {
+      switch (status) {
+        case 'PAID': return 'badge-success';
+        case 'PARTIALLY_PAID': return 'badge-warning';
+        case 'VOID': return 'badge-danger';
+        default: return 'badge-primary';
+      }
+    }
+
+    async function loadCustomers() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/customers?size=100`);
+        const list = res?.data?.content || [];
+        const select = document.getElementById('invCustomer');
+        list.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.innerText = `${c.name} (${c.phone || 'No phone'})`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openCreateInvoiceModal() {
+      document.getElementById('invoiceForm').reset();
+      document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('lineItemsContainer').innerHTML = '';
+      addLineItemRow();
+      document.getElementById('invoiceModal').classList.add('active');
+    }
+
+    function addLineItemRow() {
+      const container = document.getElementById('lineItemsContainer');
+      const row = document.createElement('div');
+      row.className = 'line-item-row';
+      row.style.cssText = 'display: grid; grid-template-columns: 140px 1fr 90px 110px 40px; gap: 8px; align-items: center;';
+      row.innerHTML = `
+        <select class="form-control item-type">
+          <option value="SERVICE">Service</option>
+          <option value="PRODUCT">Product</option>
+          <option value="CUSTOM">Custom</option>
+        </select>
+        <input type="text" class="form-control item-name" placeholder="Item / Service Name" required>
+        <input type="number" class="form-control item-qty" min="1" value="1" placeholder="Qty" required>
+        <input type="number" class="form-control item-price" min="0" step="0.01" placeholder="Price (₹)" required>
+        <button type="button" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.2rem;" onclick="this.parentElement.remove()">✕</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function openPaymentModal(invoiceId, balanceDue) {
+      const biz = API.storage.getActiveBusiness();
+      document.getElementById('payInvoiceId').value = invoiceId;
+      document.getElementById('payBalanceDue').value = API.formatCurrency(balanceDue, biz?.currency);
+      document.getElementById('payAmount').value = balanceDue;
+      document.getElementById('payAmount').max = balanceDue;
+      document.getElementById('paymentModal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+
+      const customerId = document.getElementById('invCustomer').value;
+      const invoiceDate = document.getElementById('invDate').value;
+      const discountAmount = parseFloat(document.getElementById('invDiscount').value) || 0.0;
+      const notes = document.getElementById('invNotes').value.trim();
+
+      const itemRows = document.querySelectorAll('.line-item-row');
+      const items = [];
+      itemRows.forEach(r => {
+        items.push({
+          itemType: r.querySelector('.item-type').value,
+          itemName: r.querySelector('.item-name').value.trim(),
+          quantity: parseInt(r.querySelector('.item-qty').value),
+          unitPrice: parseFloat(r.querySelector('.item-price').value)
+        });
+      });
+
+      if (items.length === 0) {
+        API.showToast('Please add at least one line item', 'warning');
+        return;
+      }
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/invoices`, {
+          method: 'POST',
+          body: JSON.stringify({
+            customerId: customerId ? parseInt(customerId) : null,
+            invoiceDate,
+            discountAmount,
+            notes,
+            items
+          })
+        });
+
+        API.showToast('Invoice generated successfully!', 'success');
+        closeModal('invoiceModal');
+        loadInvoices();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const invoiceId = document.getElementById('payInvoiceId').value;
+
+      const payload = {
+        amount: parseFloat(document.getElementById('payAmount').value),
+        paymentMethod: document.getElementById('payMethod').value,
+        transactionReference: document.getElementById('payRef').value.trim()
+      };
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/invoices/${invoiceId}/payments`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        API.showToast('Payment recorded successfully!', 'success');
+        closeModal('paymentModal');
+        loadInvoices();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    });
+  </script>
+</body>
+
+</html>

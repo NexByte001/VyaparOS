@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory & Products — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Products & Inventory</h1>
+        <div class="top-actions">
+          <button class="btn btn-primary" onclick="openProductModal()">
+            <span>+</span> Add Product
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <div class="card" style="margin-bottom: 24px;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="prodSearch" class="form-control" placeholder="Search by name, SKU, or category..." style="max-width: 350px;" oninput="loadProducts()">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+              <input type="checkbox" id="chkLowStock" onchange="loadProducts()">
+              Show Low Stock Items Only
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; margin-left: 12px;">
+              <input type="checkbox" id="chkActiveOnly" onchange="loadProducts()">
+              Active Products Only
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Purchase Cost</th>
+                  <th>Selling Price</th>
+                  <th>Current Stock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-dim);">Loading products...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div id="productModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 id="prodModalTitle" class="card-title">Add New Product</h2>
+        <button class="modal-close" onclick="closeModal('productModal')">×</button>
+      </div>
+      <div id="prodModalError" style="display:none; margin: 12px 0; padding: 10px 14px; background: rgba(239,68,68,0.15); border: 1px solid var(--danger); border-radius: 6px; color: #fca5a5; font-size: 0.9rem;"></div>
+      <form id="productForm">
+        <input type="hidden" id="editProductId">
+        <div class="form-group">
+          <label class="form-label">Product Name *</label>
+          <input type="text" id="prodName" class="form-control" required placeholder="e.g. Organic Argan Hair Oil">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">SKU / Barcode</label>
+            <input type="text" id="prodSku" class="form-control" placeholder="SKU-OIL-100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input type="text" id="prodCategory" class="form-control" placeholder="Haircare">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Purchase Cost (<span class="currency-label">₹</span>) *</label>
+            <input type="number" id="prodCost" class="form-control" min="0" step="0.01" value="0.00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Selling Price (<span class="currency-label">₹</span>) *</label>
+            <input type="number" id="prodPrice" class="form-control" min="0" step="0.01" value="0.00" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" id="lblProdStock">Stock Quantity *</label>
+            <input type="number" id="prodStock" class="form-control" min="0" value="0" required>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">Units on hand</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reorder Threshold *</label>
+            <input type="number" id="prodThreshold" class="form-control" min="0" value="5" required>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">Alert triggers at or below</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description / Notes</label>
+          <textarea id="prodDesc" class="form-control" rows="2" placeholder="Optional details, supplier specs, bottle size..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('productModal')">Cancel</button>
+          <button type="submit" id="btnSaveProduct" class="btn btn-primary">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stock Movement Modal -->
+  <div id="movementModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="card-title">Adjust Stock Level</h2>
+        <button class="modal-close" onclick="closeModal('movementModal')">×</button>
+      </div>
+      <div id="moveModalError" style="display:none; margin: 12px 0; padding: 10px 14px; background: rgba(239,68,68,0.15); border: 1px solid var(--danger); border-radius: 6px; color: #fca5a5; font-size: 0.9rem;"></div>
+      <form id="movementForm">
+        <input type="hidden" id="moveProductId">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="moveProductName" class="form-control" readonly style="background: rgba(0,0,0,0.2);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Movement Type *</label>
+          <select id="moveType" class="form-control" required onchange="handleMovementTypeChange()">
+            <option value="RECEIVED">Received Stock (+ Addition)</option>
+            <option value="SALE">Counter Sale (- Reduction)</option>
+            <option value="ADJUSTMENT">Inventory Adjustment (+ / -)</option>
+            <option value="RETURN">Customer Return (+ Addition)</option>
+            <option value="DAMAGE">Damaged / Expired (- Reduction)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="moveQtyLabel">Quantity *</label>
+          <input type="number" id="moveQuantity" class="form-control" required placeholder="Enter units (e.g. 10)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason / Justification</label>
+          <input type="text" id="moveReason" class="form-control" placeholder="e.g. Supplier PO receipt, damaged bottle">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('movementModal')">Cancel</button>
+          <button type="submit" id="btnUpdateStock" class="btn btn-primary">Update Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('inventory');
+      updateCurrencyLabels();
+      loadProducts();
+    });
+
+    let productsMap = new Map();
+
+    function updateCurrencyLabels() {
+      const biz = API.storage.getActiveBusiness();
+      const curr = biz?.currency || 'INR';
+      document.querySelectorAll('.currency-label').forEach(el => el.innerText = curr);
+    }
+
+    async function loadProducts() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const q = document.getElementById('prodSearch').value.trim();
+      const lowStock = document.getElementById('chkLowStock').checked;
+      const activeOnly = document.getElementById('chkActiveOnly').checked;
+      const tbody = document.getElementById('productsTableBody');
+
+      try {
+        const res = await API.request(`/businesses/${biz.businessId}/products?search=${encodeURIComponent(q)}&lowStockOnly=${lowStock}&activeOnly=${activeOnly}`);
+        const list = res?.data?.content || [];
+        productsMap.clear();
+
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">No products found</td></tr>`;
+          return;
+        }
+
+        list.forEach(p => productsMap.set(p.id, p));
+
+        tbody.innerHTML = list.map(p => `
+          <tr style="${!p.active ? 'opacity: 0.65;' : ''}">
+            <td>
+              <strong>${API.escapeHtml(p.name)}</strong>
+              ${p.lowStock ? `<span class="badge badge-danger" style="margin-left:8px;">LOW STOCK</span>` : ''}
+              ${p.description ? `<div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 2px;">${API.escapeHtml(p.description)}</div>` : ''}
+            </td>
+            <td style="color: var(--text-dim);">${API.escapeHtml(p.sku || '-')}</td>
+            <td><span class="badge badge-primary">${API.escapeHtml(p.category || 'General')}</span></td>
+            <td>${API.formatCurrency(p.purchaseCost, biz.currency)}</td>
+            <td style="font-weight: 700; color: var(--success);">${API.formatCurrency(p.sellingPrice, biz.currency)}</td>
+            <td style="font-weight: 800; color: ${p.lowStock ? 'var(--danger)' : 'var(--text-main)'};">
+              ${p.currentStock} units
+              <div style="font-size: 0.75rem; color: var(--text-dim); font-weight: normal;">Reorder: ${p.reorderThreshold}</div>
+            </td>
+            <td>
+              <span class="badge ${p.active ? 'badge-success' : 'badge-danger'}">
+                ${p.active ? 'ACTIVE' : 'INACTIVE'}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="openMovementModal(${p.id})">Adjust</button>
+                <button class="btn btn-secondary btn-sm" onclick="editProduct(${p.id})">Edit</button>
+                <button class="btn ${p.active ? 'btn-danger' : 'btn-success'} btn-sm" onclick="toggleProductActive(${p.id}, ${!p.active})">
+                  ${p.active ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 24px;">
+          Failed to load products: ${API.escapeHtml(err.message || 'Error occurred')}<br>
+          <button class="btn btn-secondary btn-sm" onclick="loadProducts()" style="margin-top: 8px;">Retry</button>
+        </td></tr>`;
+        API.showToast(err.message || 'Failed to load products', 'error');
+      }
+    }
+
+    function openProductModal() {
+      document.getElementById('editProductId').value = '';
+      document.getElementById('prodModalTitle').innerText = 'Add New Product';
+      document.getElementById('productForm').reset();
+      document.getElementById('lblProdStock').innerText = 'Initial Stock *';
+      hideModalError('prodModalError');
+      updateCurrencyLabels();
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function editProduct(item) {
+      const p = typeof item === 'object' ? item : productsMap.get(item);
+      if (!p) return;
+      document.getElementById('editProductId').value = p.id;
+      document.getElementById('prodModalTitle').innerText = 'Edit Product';
+      document.getElementById('prodName').value = p.name || '';
+      document.getElementById('prodSku').value = p.sku || '';
+      document.getElementById('prodCategory').value = p.category || '';
+      document.getElementById('prodCost').value = p.purchaseCost;
+      document.getElementById('prodPrice').value = p.sellingPrice;
+      document.getElementById('prodStock').value = p.currentStock;
+      document.getElementById('lblProdStock').innerText = 'Current Stock Count *';
+      document.getElementById('prodThreshold').value = p.reorderThreshold;
+      document.getElementById('prodDesc').value = p.description || '';
+      hideModalError('prodModalError');
+      updateCurrencyLabels();
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function openMovementModal(item) {
+      const p = typeof item === 'object' ? item : productsMap.get(item);
+      if (!p) return;
+      document.getElementById('moveProductId').value = p.id;
+      document.getElementById('moveProductName').value = `${p.name} (Current Stock: ${p.currentStock})`;
+      document.getElementById('moveType').value = 'RECEIVED';
+      document.getElementById('moveQuantity').value = '';
+      document.getElementById('moveReason').value = '';
+      handleMovementTypeChange();
+      hideModalError('moveModalError');
+      document.getElementById('movementModal').classList.add('active');
+    }
+
+    function handleMovementTypeChange() {
+      const type = document.getElementById('moveType').value;
+      const lbl = document.getElementById('moveQtyLabel');
+      if (type === 'SALE' || type === 'DAMAGE') {
+        lbl.innerText = 'Units to Deduct * (will reduce stock)';
+      } else if (type === 'RECEIVED' || type === 'RETURN') {
+        lbl.innerText = 'Units to Add * (will increase stock)';
+      } else {
+        lbl.innerText = 'Quantity Change * (positive to add, negative to reduce)';
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      hideModalError(id === 'productModal' ? 'prodModalError' : 'moveModalError');
+    }
+
+    function showModalError(containerId, msg) {
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.innerText = msg;
+        el.style.display = 'block';
+      }
+    }
+
+    function hideModalError(containerId) {
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.innerText = '';
+        el.style.display = 'none';
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const id = document.getElementById('editProductId').value;
+      hideModalError('prodModalError');
+
+      const name = document.getElementById('prodName').value.trim();
+      const sku = document.getElementById('prodSku').value.trim();
+      const category = document.getElementById('prodCategory').value.trim();
+      const purchaseCost = parseFloat(document.getElementById('prodCost').value);
+      const sellingPrice = parseFloat(document.getElementById('prodPrice').value);
+      const currentStock = parseInt(document.getElementById('prodStock').value);
+      const reorderThreshold = parseInt(document.getElementById('prodThreshold').value);
+      const description = document.getElementById('prodDesc').value.trim();
+
+      if (!name) {
+        showModalError('prodModalError', 'Product name is required');
+        return;
+      }
+      if (isNaN(purchaseCost) || purchaseCost < 0) {
+        showModalError('prodModalError', 'Purchase cost must be a valid positive amount');
+        return;
+      }
+      if (isNaN(sellingPrice) || sellingPrice < 0) {
+        showModalError('prodModalError', 'Selling price must be a valid positive amount');
+        return;
+      }
+      if (isNaN(currentStock) || currentStock < 0) {
+        showModalError('prodModalError', 'Stock quantity cannot be negative');
+        return;
+      }
+
+      const payload = {
+        name,
+        sku: sku || null,
+        category: category || null,
+        purchaseCost,
+        sellingPrice,
+        currentStock,
+        reorderThreshold: isNaN(reorderThreshold) ? 5 : reorderThreshold,
+        description: description || null
+      };
+
+      const btn = document.getElementById('btnSaveProduct');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+
+      try {
+        if (id) {
+          await API.request(`/businesses/${biz.businessId}/products/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          API.showToast('Product updated successfully', 'success');
+        } else {
+          await API.request(`/businesses/${biz.businessId}/products`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          API.showToast('Product created successfully', 'success');
+        }
+        closeModal('productModal');
+        await loadProducts();
+      } catch (err) {
+        showModalError('prodModalError', err.message || 'Failed to save product');
+        API.showToast(err.message || 'Failed to save product', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Product';
+      }
+    });
+
+    document.getElementById('movementForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+      const productId = document.getElementById('moveProductId').value;
+      hideModalError('moveModalError');
+
+      const movementType = document.getElementById('moveType').value;
+      let rawQty = parseInt(document.getElementById('moveQuantity').value);
+      const reason = document.getElementById('moveReason').value.trim();
+
+      if (isNaN(rawQty) || rawQty === 0) {
+        showModalError('moveModalError', 'Please enter a non-zero quantity change');
+        return;
+      }
+
+      let quantityChange = rawQty;
+      if (movementType === 'SALE' || movementType === 'DAMAGE') {
+        quantityChange = -Math.abs(rawQty);
+      } else if (movementType === 'RECEIVED' || movementType === 'RETURN') {
+        quantityChange = Math.abs(rawQty);
+      }
+
+      const payload = {
+        movementType,
+        quantityChange,
+        reason: reason || null
+      };
+
+      const btn = document.getElementById('btnUpdateStock');
+      btn.disabled = true;
+      btn.innerText = 'Updating...';
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/products/${productId}/stock-movements`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        API.showToast('Stock level updated successfully!', 'success');
+        closeModal('movementModal');
+        await loadProducts();
+      } catch (err) {
+        showModalError('moveModalError', err.message || 'Stock adjustment rejected');
+        API.showToast(err.message || 'Stock adjustment rejected', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Update Stock';
+      }
+    });
+
+    async function toggleProductActive(productId, makeActive) {
+      const biz = API.storage.getActiveBusiness();
+      const p = productsMap.get(productId);
+      const actionName = makeActive ? 'activate' : 'deactivate';
+      if (!confirm(`Are you sure you want to ${actionName} "${p ? p.name : 'this product'}"?`)) return;
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/products/${productId}/status?active=${makeActive}`, {
+          method: 'PATCH'
+        });
+        API.showToast(`Product ${makeActive ? 'activated' : 'deactivated'} successfully`, 'success');
+        await loadProducts();
+      } catch (err) {
+        API.showToast(err.message || `Failed to ${actionName} product`, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

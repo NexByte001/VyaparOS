@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointments — VyaparOS</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/brand/favicon.svg">
+  <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <h1 class="page-title">Appointment Scheduling</h1>
+        <div class="top-actions">
+          <button class="btn btn-primary" onclick="openBookAppointmentModal()">
+            <span>+</span> Book Appointment
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <div class="card" style="margin-bottom: 24px;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+            <div>
+              <label class="form-label" style="margin-bottom: 2px;">Filter by Date</label>
+              <input type="date" id="filterDate" class="form-control" onchange="loadAppointments()">
+            </div>
+            <div>
+              <label class="form-label" style="margin-bottom: 2px;">Status</label>
+              <select id="filterStatus" class="form-control" onchange="loadAppointments()">
+                <option value="">All Statuses</option>
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+                <option value="NO_SHOW">No Show</option>
+              </select>
+            </div>
+            <div style="margin-top: 22px;">
+              <button class="btn btn-secondary" onclick="resetFilters()">Clear Filters</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Staff Member</th>
+                  <th>Time Slot</th>
+                  <th>Price Snapshot</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="appointmentsTableBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-dim);">Loading appointments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Book Appointment Modal -->
+  <div id="appointmentModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="card-title">Book New Appointment</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form id="appointmentForm">
+        <div class="form-group">
+          <label class="form-label">Customer *</label>
+          <select id="apptCustomer" class="form-control" required>
+            <option value="">Select Customer...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Service *</label>
+          <select id="apptService" class="form-control" required onchange="updateServiceHint()">
+            <option value="">Select Service...</option>
+          </select>
+          <small id="serviceHint" style="color: var(--secondary); font-size: 0.8rem; margin-top: 4px; display: block;"></small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Assigned Staff Member (Optional)</label>
+          <select id="apptStaff" class="form-control">
+            <option value="">Unassigned / Any available</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Start Date & Time *</label>
+          <input type="datetime-local" id="apptStartTime" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Appointment Notes / Requests</label>
+          <textarea id="apptNotes" class="form-control" rows="2" placeholder="e.g. Requested quiet session"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script>
+    let servicesCache = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!API.checkAuthGuard()) return;
+      API.renderSidebar('appointments');
+      await loadAppointments();
+      await loadDropdownData();
+    });
+
+    function resetFilters() {
+      document.getElementById('filterDate').value = '';
+      document.getElementById('filterStatus').value = '';
+      loadAppointments();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatTimeOnly(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function loadAppointments() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+      const tbody = document.getElementById('appointmentsTableBody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-dim); padding: 24px;">Loading appointments...</td></tr>`;
+
+      const dateVal = document.getElementById('filterDate').value;
+      const statusVal = document.getElementById('filterStatus').value;
+
+      let q = `/businesses/${biz.businessId}/appointments?`;
+      if (dateVal) {
+        q += `startDate=${dateVal}T00:00:00Z&endDate=${dateVal}T23:59:59Z&`;
+      }
+      if (statusVal) {
+        q += `status=${statusVal}&`;
+      }
+
+      try {
+        const res = await API.request(q);
+        const list = res?.data || [];
+
+        if (list.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 32px 16px; color: var(--text-muted);">
+                <div style="font-size: 1.1rem; margin-bottom: 6px;">No appointments found</div>
+                <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">No records match your selected date or status criteria.</div>
+                <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Clear Filters</button>
+              </td>
+            </tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(a => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(a.customer ? a.customer.name : 'Walk-in')}</strong>
+              <div style="color: var(--text-dim); font-size: 0.8rem;">${escapeHtml(a.customer ? a.customer.phone || '' : '')}</div>
+            </td>
+            <td><strong>${escapeHtml(a.service ? a.service.name : '-')}</strong></td>
+            <td>${a.staff ? escapeHtml(a.staff.fullName) : '<span style="color:var(--text-dim);">Unassigned</span>'}</td>
+            <td>
+              <div>${API.formatDateTime(a.startTime)}</div>
+              <div style="font-size:0.8rem; color:var(--text-dim);">to ${formatTimeOnly(a.endTime)}</div>
+            </td>
+            <td style="font-weight: 700;">${API.formatCurrency(a.priceSnapshot, biz.currency)}</td>
+            <td>
+              <span class="badge ${getStatusBadge(a.status)}">${a.status}</span>
+            </td>
+            <td>
+              <select class="form-control" style="width: auto; padding: 4px 8px; font-size: 0.8rem;" onchange="changeStatus(${a.id}, this.value)">
+                <option value="">Change Status...</option>
+                <option value="CONFIRMED" ${a.status === 'CONFIRMED' ? 'selected' : ''}>Confirmed</option>
+                <option value="IN_PROGRESS" ${a.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+                <option value="COMPLETED" ${a.status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                <option value="CANCELLED" ${a.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                <option value="NO_SHOW" ${a.status === 'NO_SHOW' ? 'selected' : ''}>No Show</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error fetching appointments:', err);
+        API.showToast(err.message || 'Failed to load appointments', 'error');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 32px 16px;">
+              <div style="color: var(--danger); font-weight: 600; margin-bottom: 6px;">Failed to load appointments</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">${escapeHtml(err.message || 'Could not retrieve appointments')}</div>
+              <button class="btn btn-secondary btn-sm" onclick="loadAppointments()">↻ Retry</button>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function getStatusBadge(status) {
+      switch(status) {
+        case 'COMPLETED': return 'badge-success';
+        case 'CONFIRMED': return 'badge-primary';
+        case 'IN_PROGRESS': return 'badge-warning';
+        case 'CANCELLED': case 'NO_SHOW': return 'badge-danger';
+        default: return 'badge-primary';
+      }
+    }
+
+    async function changeStatus(id, newStatus) {
+      if (!newStatus) return;
+      const biz = API.storage.getActiveBusiness();
+      try {
+        await API.request(`/businesses/${biz.businessId}/appointments/${id}/status`, {
+          method: 'POST',
+          body: JSON.stringify({ status: newStatus })
+        });
+        API.showToast(`Status updated to ${newStatus}`, 'success');
+        loadAppointments();
+      } catch (err) {
+        API.showToast(err.message, 'error');
+      }
+    }
+
+    async function loadDropdownData() {
+      const biz = API.storage.getActiveBusiness();
+      if (!biz) return;
+
+      try {
+        // Load Customers
+        const custRes = await API.request(`/businesses/${biz.businessId}/customers?size=100`);
+        const custList = custRes?.data?.content || [];
+        const custSelect = document.getElementById('apptCustomer');
+        custSelect.innerHTML = '<option value="">Select Customer...</option>' +
+          custList.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.phone || 'No phone')})</option>`).join('');
+
+        // Load Services
+        const servRes = await API.request(`/businesses/${biz.businessId}/services?activeOnly=true`);
+        servicesCache = servRes?.data || [];
+        const servSelect = document.getElementById('apptService');
+        servSelect.innerHTML = '<option value="">Select Service...</option>' +
+          servicesCache.map(s => `<option value="${s.id}">${escapeHtml(s.name)} (${s.durationMinutes} min - ${API.formatCurrency(s.price, biz.currency)})</option>`).join('');
+
+        // Load Staff Members
+        const memRes = await API.request(`/businesses/${biz.businessId}/members`);
+        const memList = memRes?.data || [];
+        const staffSelect = document.getElementById('apptStaff');
+        staffSelect.innerHTML = '<option value="">Unassigned / Any available</option>' +
+          memList.map(m => `<option value="${m.membershipId}">${escapeHtml(m.fullName)} (${m.role})</option>`).join('');
+
+      } catch (err) {
+        console.error('Failed to load dropdowns', err);
+      }
+    }
+
+    function updateServiceHint() {
+      const servId = document.getElementById('apptService').value;
+      const hint = document.getElementById('serviceHint');
+      const found = servicesCache.find(s => s.id == servId);
+      if (found) {
+        const biz = API.storage.getActiveBusiness();
+        hint.innerText = `Estimated Duration: ${found.durationMinutes} mins | Price: ${API.formatCurrency(found.price, biz?.currency)}`;
+      } else {
+        hint.innerText = '';
+      }
+    }
+
+    function openBookAppointmentModal() {
+      document.getElementById('appointmentForm').reset();
+      document.getElementById('serviceHint').innerText = '';
+      
+      // Timezone-aware date constraint: restrict min attribute to present
+      const now = new Date();
+      const nowLocalStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      const apptInput = document.getElementById('apptStartTime');
+      apptInput.min = nowLocalStr;
+
+      // Default to next whole hour
+      const nextHour = new Date(Date.now() + 3600000);
+      nextHour.setMinutes(0, 0, 0);
+      apptInput.value = new Date(nextHour.getTime() - nextHour.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      
+      document.getElementById('appointmentModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('appointmentModal').classList.remove('active');
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const biz = API.storage.getActiveBusiness();
+
+      const customerId = document.getElementById('apptCustomer').value;
+      const serviceId = document.getElementById('apptService').value;
+      const staffMembershipId = document.getElementById('apptStaff').value || null;
+      const startTimeLocal = document.getElementById('apptStartTime').value;
+      const notes = document.getElementById('apptNotes').value.trim();
+
+      // Client-side backdating validation
+      const chosenDate = new Date(startTimeLocal);
+      const nowWithBuffer = new Date(Date.now() - 60000); // 1 minute buffer
+      if (chosenDate < nowWithBuffer) {
+        API.showToast('Cannot create backdated appointments. Please select a current or future time.', 'error');
+        return;
+      }
+
+      const startTime = chosenDate.toISOString();
+
+      try {
+        await API.request(`/businesses/${biz.businessId}/appointments`, {
+          method: 'POST',
+          body: JSON.stringify({
+            customerId: parseInt(customerId),
+            serviceId: parseInt(serviceId),
+            staffMembershipId: staffMembershipId ? parseInt(staffMembershipId) : null,
+            startTime,
+            notes
+          })
+        });
+
+        API.showToast('Appointment booked successfully!', 'success');
+        closeModal();
+        loadAppointments();
+      } catch (err) {
+        API.showToast(err.message || 'Booking collision or validation failed', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
