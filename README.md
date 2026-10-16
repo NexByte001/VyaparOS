@@ -45,7 +45,789 @@ By integrating backend services, database operations, and security mechanisms in
 Ultimately, Vypaar OS seeks to provide a practical and maintainable digital solution for management, helping owners and staff improve operational efficiency and deliver a more organized customer experience.
 
 
+ ## Week 2
 
+
+
+### Requirement Analysis and Existing-System Review
+
+***Duration: 13 July – 19 July 2026***
+
+***1. Objective***
+
+The objective of the second week was to understand the functional requirements of the proposed application and review the workflow of a typical salon.
+
+***2. Activities Performed***
+
+Reviewed the existing manual salon management process.
+
+Identified the limitations of maintaining paper-based records.
+
+Studied the relationship between customers, appointments, services, and billing.
+
+Identified the administrative and staff-level activities.
+
+Discussed the expected features of each application module.
+
+Reviewed the proposed technologies and development approach.
+
+Organized the initial functional and non-functional requirements.
+
+3. Functional Requirements
+
+The proposed system was expected to support:
+
+Customer registration and record management.
+
+Appointment creation and status tracking.
+
+Salon service management.
+
+Billing and financial record management.
+
+Product and inventory management.
+
+Staff management and attendance tracking.
+
+Secure login and role-based access.
+
+Dashboard-based access to important information.
+
+4. Non-Functional Requirements
+
+The application should aim to provide:
+
+A simple and user-friendly interface.
+
+Appropriate authentication and access restrictions.
+
+Reliable storage and retrieval of records.
+
+Maintainable backend code.
+
+Reasonable response times.
+
+A structure that supports future enhancements.
+
+5. Outcome
+
+The team developed a clearer understanding of the project requirements, the intended users, and the responsibilities associated with each module.
+
+Week 3: System Architecture and Module Planning
+
+Duration: 20 July – 26 July 2026
+
+1. Objective
+
+The objective of this week was to define the proposed system architecture and divide the project into manageable modules.
+
+2. Activities Performed
+
+Reviewed the overall structure of a web application.
+
+Identified the frontend, backend, and database responsibilities.
+
+Planned the communication between the interface and backend APIs.
+
+Defined the major functional modules.
+
+Assigned responsibilities among the five team members.
+
+Reviewed the use of Java and Spring Boot for backend development.
+
+Considered the database requirements for storing business information.
+
+3. Proposed Architecture
+
+The application follows a layered web-application approach:
+
+Presentation Layer: HTML, CSS, and JavaScript provide the user interface.
+
+Application Layer: Java and Spring Boot handle business logic and API requests.
+
+Security Layer: Spring Security supports authentication and access restrictions.
+
+Data Layer: The configured database stores application records.
+
+Deployment Layer: The frontend is hosted on a web hosting platform, while the backend and database require compatible hosting and configuration.
+
+4. Module Distribution
+
+Team Member
+
+Assigned Module
+
+Jagrati Sahu
+
+Backend and Security
+
+Koshi Jain
+
+Customers and Appointments
+
+Navya Raj
+
+Billing and Finance
+
+Palak Sahani
+
+Inventory
+
+Kumkum Rathore
+
+Frontend and Dashboard
+
+5. Outcome
+
+A modular project structure and team responsibility plan were established to support organized development and integration.
+
+Week 4: Database Design and User Interface Planning
+
+Duration: 27 July – 2 August 2026
+
+1. Objective
+
+The objective of this week was to identify the information required by each module and plan how users would interact with the application.
+
+2. Activities Performed
+
+Reviewed the data required for customer records.
+
+Identified the information needed for appointment scheduling.
+
+Considered the relationship between services, appointments, and billing.
+
+Reviewed the requirements for product and inventory records.
+
+Identified the information required for staff and attendance records.
+
+Planned the organization of dashboard sections.
+
+Considered validation requirements for user input.
+
+3. Proposed Database Entities
+
+The database design may include the following logical entities, depending on the final implementation:
+
+Users
+
+Customers
+
+Appointments
+
+Services
+
+Bills or invoices
+
+Products
+
+Inventory transactions
+
+Staff
+
+Attendance records
+
+4. Interface Planning
+
+The interface was planned to provide navigation between the major modules, display important information, and offer forms for creating or updating records.
+
+The dashboard was intended to make frequently used features accessible without requiring users to navigate through multiple unrelated pages.
+
+5. Outcome
+
+The data requirements and interface structure were reviewed, providing a foundation for implementing and connecting the application modules.
+
+Week 5: Backend Setup and Authentication Planning
+
+Duration: 3 August – 9 August 2026
+
+1. Objective
+
+The objective of this week was to focus on the backend structure, authentication requirements, and communication between the frontend and backend.
+
+2. Activities Performed
+
+Reviewed the Spring Boot application structure.
+
+Examined Maven configuration and dependency management.
+
+Reviewed the organization of backend packages and classes.
+
+Considered the database connection configuration.
+
+Reviewed login and registration requirements.
+
+Planned administrative and staff access levels.
+
+Identified the need for input validation and error handling.
+
+3. Backend Responsibilities
+
+The backend is responsible for receiving requests, processing business logic, interacting with the database, and returning appropriate responses to the frontend.
+
+The planned API structure supports operations such as creating, retrieving, updating, and deleting records where those operations are required and implemented.
+
+4. Security Considerations
+
+The application requires suitable authentication and authorization mechanisms to restrict access to administrative and staff functionality.
+
+Sensitive configuration values should be managed appropriately, and database credentials should not be exposed in publicly accessible source files.
+
+5. Outcome
+
+The backend requirements and security considerations were reviewed in preparation for integrating the business modules.
+
+Week 6: Customer and Appointment Management
+
+Duration: 10 August – 16 August 2026
+
+1. Objective
+
+The objective of this week was to focus on the customer management and appointment management requirements of the salon system.
+
+2. Activities Performed
+
+Reviewed the customer registration workflow.
+
+Identified the information required for customer profiles.
+
+Examined appointment creation and update requirements.
+
+Considered appointment dates, times, and associated services.
+
+Reviewed the relationship between customers and appointments.
+
+Considered validation for required customer and appointment fields.
+
+Planned the display of appointment records.
+
+3. Customer Management
+
+The customer module is intended to organize customer details and make records accessible when managing salon services and appointments.
+
+4. Appointment Management
+
+The appointment module is intended to support the creation and tracking of bookings. Appointment information should be associated with the relevant customer and service where supported by the application.
+
+5. Outcome
+
+The customer and appointment workflows were defined and reviewed for integration with the broader salon management system.
+
+Week 7: Billing and Financial Management
+
+Duration: 17 August – 23 August 2026
+
+1. Objective
+
+The objective of this week was to review the billing workflow and requirements for managing salon transactions.
+
+2. Activities Performed
+
+Identified the information needed for generating bills.
+
+Reviewed the relationship between services and billing.
+
+Considered the calculation of totals and applicable discounts.
+
+Reviewed the storage of transaction details.
+
+Identified the need for accurate financial records.
+
+Considered the presentation of billing information in the interface.
+
+Reviewed possible validation requirements for billing entries.
+
+3. Billing Module
+
+The billing module is intended to help salon administrators organize customer charges and transaction details. Its design should support accurate calculations and consistent record-keeping.
+
+4. Financial Record Management
+
+Financial information should be organized so that authorized users can review relevant transactions and identify business activity.
+
+5. Outcome
+
+The billing and finance requirements were reviewed, and the module's expected role in the complete application was documented.
+
+Week 8: Inventory and Product Management
+
+Duration: 24 August – 30 August 2026
+
+1. Objective
+
+The objective of this week was to focus on inventory requirements and the management of salon products.
+
+2. Activities Performed
+
+Identified the information needed for product records.
+
+Reviewed product names, prices, quantities, and related details.
+
+Considered the need for adding and updating product information.
+
+Reviewed inventory quantity tracking.
+
+Identified the importance of validating product entries.
+
+Considered how inventory information should be displayed.
+
+Reviewed the relationship between the inventory module and the main dashboard.
+
+3. Inventory Management
+
+The inventory module is intended to organize salon products and maintain their associated information. Where implemented, quantity tracking can help administrators monitor stock levels and identify products that require replenishment.
+
+4. Data Management Considerations
+
+Product records should be validated before saving. The application should also provide appropriate feedback when a product is added, updated, or cannot be saved.
+
+5. Outcome
+
+The inventory module requirements and expected product-management workflow were documented for integration and verification.
+
+Week 9: Staff Management, Attendance and Dashboard
+
+Duration: 31 August – 6 September 2026
+
+1. Objective
+
+The objective of this week was to review staff management requirements and the presentation of business information through the dashboard.
+
+2. Activities Performed
+
+Reviewed the requirements for staff records.
+
+Identified the need to record attendance information.
+
+Considered attendance statuses such as present, absent, and on leave.
+
+Reviewed the information required for attendance history.
+
+Considered the display of important business metrics.
+
+Reviewed navigation between different application modules.
+
+Considered how the interface should respond to missing or unavailable data.
+
+3. Staff and Attendance Management
+
+The staff management module is intended to organize staff-related information. Attendance functionality may record daily attendance and display relevant attendance history according to the features available in the final application.
+
+4. Dashboard
+
+The dashboard is intended to provide convenient access to the main modules and display useful information about salon operations.
+
+Depending on the implemented functionality, dashboard information may include customer records, appointments, billing summaries, inventory information, and staff details.
+
+5. Outcome
+
+The requirements for staff attendance and dashboard organization were reviewed in preparation for application-level integration.
+
+Week 10: Module Integration and Application Configuration
+
+Duration: 7 September – 13 September 2026
+
+1. Objective
+
+The objective of this week was to review how the application modules work together and identify configuration requirements.
+
+2. Activities Performed
+
+Reviewed communication between the frontend and backend.
+
+Examined the API requirements for individual modules.
+
+Reviewed database connectivity and persistence settings.
+
+Considered cross-module relationships between customers, appointments, services, and billing.
+
+Reviewed authentication and access restrictions.
+
+Identified configuration requirements for local execution.
+
+Considered the need for consistent error responses.
+
+3. Integration Considerations
+
+Integration requires the frontend to send requests in the expected format and the backend to process those requests correctly.
+
+Database configuration must also support the intended storage behavior. In particular, data should persist across application restarts when persistent storage is required.
+
+4. Configuration Review
+
+The project configuration should be checked for appropriate port settings, database connection details, cross-origin access rules, and environment-specific properties.
+
+5. Outcome
+
+The integration and configuration requirements were documented, establishing the basis for functional verification and preparation for deployment.
+
+Week 11: Functional Testing and Error Identification
+
+Duration: 14 September – 20 September 2026
+
+1. Objective
+
+The objective of this week was to review the application for functional issues, incorrect behavior, and integration problems.
+
+2. Activities Performed
+
+Reviewed navigation between application modules.
+
+Considered login and access-control scenarios.
+
+Reviewed customer and appointment operations.
+
+Considered the validation of service and billing information.
+
+Reviewed product management and inventory operations.
+
+Considered staff attendance operations.
+
+Examined possible frontend and backend communication errors.
+
+Reviewed database saving and retrieval behavior.
+
+3. Functional Testing
+
+The main areas for functional verification include:
+
+Test Area
+
+Verification Objective
+
+Authentication
+
+Check login behavior and access restrictions
+
+Customer Management
+
+Verify customer record operations
+
+Appointments
+
+Verify appointment creation and retrieval
+
+Services
+
+Verify service information and updates
+
+Billing
+
+Review calculations and transaction records
+
+Inventory
+
+Verify product operations and stock information
+
+Attendance
+
+Review attendance recording and retrieval
+
+Dashboard
+
+Check navigation and displayed information
+
+Database
+
+Check saving, retrieval, and persistence
+
+Deployment
+
+Check application accessibility and service connectivity
+
+4. Error Handling
+
+The application should provide meaningful feedback when a request fails or required information is missing. Backend errors, invalid data, and connectivity problems should be investigated during testing.
+
+5. Outcome
+
+A functional verification checklist was established to assess the application and identify areas requiring correction before final submission.
+
+Testing note: The table describes the testing scope. Individual test cases should be marked as passed or failed only after they have actually been executed.
+
+Week 12: Final Review, Documentation and Project Completion
+
+Duration: 21 September – 27 September 2026
+
+1. Objective
+
+The objective of the final week was to consolidate the project, review the available functionality, prepare the documentation, and organize the final deliverables.
+
+2. Activities Performed
+
+Reviewed the overall project structure.
+
+Examined the available functionality of each module.
+
+Reviewed the relationship between the frontend and backend.
+
+Checked the project configuration required for execution.
+
+Reviewed the application interface for consistency.
+
+Organized the project documentation.
+
+Prepared the final project summary.
+
+Reviewed the deployment information and identified any remaining configuration requirements.
+
+Organized the final deliverables for academic submission.
+
+3. Final Project Review
+
+The final review covers the major modules of Vypaar OS, including customer management, appointments, services, billing, inventory, staff attendance, authentication, and dashboard functionality.
+
+The availability and completeness of individual features should be verified against the final application.
+
+4. Project Deliverables
+
+The expected project deliverables include:
+
+Project source code
+
+Frontend files
+
+Backend application
+
+Database configuration
+
+Project abstract and introduction
+
+Requirement analysis
+
+System architecture and module descriptions
+
+Weekly project documentation
+
+Testing checklist
+
+Deployment information
+
+Final conclusion and future scope
+
+5. Outcome
+
+The project documentation and available application components were consolidated for final academic review. Any remaining deployment, persistence, or module-specific issues should be recorded transparently rather than described as successfully resolved without verification.
+
+3. Individual Team Responsibilities
+
+3.1 Jagrati Sahu — Backend and Security
+
+The backend and security responsibilities include reviewing the Spring Boot application structure, database connectivity, authentication, access control, and communication between the frontend and backend.
+
+The role also includes examining API behavior, supporting module integration, reviewing error handling, and checking backend configuration.
+
+3.2 Koshi Jain — Customers and Appointments
+
+The customer and appointment responsibilities include reviewing customer information management, appointment creation, appointment tracking, and the relationship between customer records and salon services.
+
+The module is intended to support organized customer information and appointment workflows.
+
+3.3 Navya Raj — Billing and Finance
+
+The billing and finance responsibilities include reviewing transaction requirements, service charges, billing calculations, and the organization of financial records.
+
+The module aims to support accurate billing and convenient access to transaction information.
+
+3.4 Palak Sahani — Inventory Management
+
+The inventory responsibilities include reviewing product information, stock quantities, product updates, and inventory record management.
+
+The module aims to help salon administrators organize products and monitor available stock.
+
+3.5 Kumkum Rathore — Frontend and Dashboard
+
+The frontend and dashboard responsibilities include reviewing page structure, interface styling, navigation, dashboard organization, and communication between user-interface components and backend services.
+
+The role aims to provide a consistent and accessible interface for the system's major functions.
+
+4. System Modules
+
+4.1 Authentication and Authorization
+
+This module supports controlled access to the application. Authentication verifies user identity, while authorization determines which functions a user can access.
+
+4.2 Customer Management
+
+This module organizes customer information and supports access to customer records for salon operations.
+
+4.3 Appointment Management
+
+This module organizes appointment details and helps users manage salon bookings.
+
+4.4 Service Management
+
+This module maintains information about salon services and their associated details.
+
+4.5 Billing and Finance
+
+This module organizes customer charges and financial transaction information.
+
+4.6 Inventory Management
+
+This module maintains product-related information and supports inventory tracking where implemented.
+
+4.7 Staff Attendance
+
+This module supports staff-related information and attendance tracking according to the implemented functionality.
+
+4.8 Dashboard
+
+The dashboard provides a central interface for navigating between the application's major modules and reviewing relevant information.
+
+5. Challenges and Considerations
+
+During the planning, development, and review of a full-stack management application, several technical areas require attention.
+
+5.1 Frontend and Backend Communication
+
+The frontend and backend must use compatible API endpoints and data formats. Incorrect endpoints or unavailable backend services can prevent application features from working.
+
+5.2 Database Persistence
+
+Database configuration must match the intended storage requirements. An in-memory database may lose its records when the application stops, whereas persistent storage is required for records that must remain available after a restart.
+
+5.3 Authentication and Security
+
+Authentication and authorization must be configured carefully to prevent unauthorized access to restricted functions.
+
+5.4 Module Integration
+
+Individual modules may depend on shared records. For example, appointment information may refer to customers and services. These relationships must be handled consistently.
+
+5.5 Deployment Configuration
+
+A deployed frontend requires a reachable backend and a properly configured database if it depends on server-side operations. Hosting the frontend alone does not automatically deploy the complete full-stack application.
+
+5.6 Feature Verification
+
+A feature should be considered complete only after its behavior has been checked. Saving, updating, retrieving, and deleting records should be tested wherever the relevant operations are supported.
+
+6. Testing Strategy
+
+The application should be evaluated through the following testing activities.
+
+6.1 Functional Testing
+
+Verify that the available functions behave according to their requirements.
+
+6.2 Integration Testing
+
+Verify communication between the frontend, backend, database, and individual modules.
+
+6.3 Validation Testing
+
+Check how the application handles missing fields, invalid input, and incorrect data.
+
+6.4 Security Testing
+
+Check authentication, authorization, and access restrictions.
+
+6.5 Persistence Testing
+
+Create records, restart the application, and check whether the records remain available as expected.
+
+6.6 Deployment Testing
+
+Check whether the deployed interface can reach the backend and whether the backend can access its configured database.
+
+7. Expected Benefits
+
+Vypaar OS is intended to provide the following benefits:
+
+Centralized management of salon information.
+
+Reduced dependence on manual record-keeping.
+
+Better organization of customer and appointment records.
+
+More convenient management of services and billing.
+
+Improved organization of product and inventory information.
+
+Easier access to staff-related information.
+
+A consistent interface for daily salon operations.
+
+A modular foundation for future improvements.
+
+These benefits depend on the correct implementation and use of the relevant application features.
+
+8. Limitations
+
+The application may have limitations depending on its final implementation and deployment configuration.
+
+Some functions may require additional testing or refinement.
+
+Persistent storage depends on the configured database and hosting environment.
+
+Backend-dependent functionality requires the backend service to remain accessible.
+
+Advanced analytics and automated notifications may require further development.
+
+The accuracy of business reports depends on the completeness of stored data.
+
+Additional security testing may be required before production use.
+
+9. Future Scope
+
+The system can be extended with additional features to improve usability and business management.
+
+9.1 Online Appointment Booking
+
+Customers could book appointments through an online interface.
+
+9.2 Automated Notifications
+
+Email or SMS notifications could remind customers about upcoming appointments.
+
+9.3 Advanced Reports
+
+The application could provide daily, weekly, and monthly reports covering revenue, appointments, and inventory.
+
+9.4 Online Payments
+
+Integration with a payment gateway could simplify digital transactions.
+
+9.5 Customer Feedback
+
+A feedback module could help salon administrators understand customer satisfaction.
+
+9.6 Enhanced Inventory Alerts
+
+Automatic low-stock notifications could help staff monitor products requiring replenishment.
+
+9.7 Cloud Database and Backup
+
+A persistent cloud database and regular backups could improve data availability and recovery.
+
+9.8 Mobile-Friendly Interface
+
+Further responsive-design improvements could make the application easier to use on smartphones and tablets.
+
+10. Conclusion
+
+Vypaar OS is a web-based Salon Management System intended to simplify the organization of salon operations through a centralized digital platform. The project brings together major management areas, including customer records, appointments, services, billing, inventory, staff attendance, and administrative functionality.
+
+The project provides an opportunity to apply concepts from software engineering, web development, backend programming, database management, application security, and interface design. Its modular organization also demonstrates the importance of separating responsibilities and coordinating different components within a full-stack application.
+
+The project documentation covers the requirements, proposed architecture, module responsibilities, integration considerations, testing strategy, and opportunities for future development. The final quality of the application depends on the correctness of its implementation, database configuration, security controls, and deployment environment.
+
+In conclusion, Vypaar OS establishes a foundation for digitizing salon management activities. With further testing, reliable persistent storage, and continued improvements to its modules, the application can be developed into a more complete and dependable solution for salon administration.
+
+References
+
+Oracle. Java Documentation. https://docs.oracle.com/en/java/
+
+Spring. Spring Boot Reference Documentation. https://docs.spring.io/spring-boot/
+
+Spring. Spring Security Reference. https://docs.spring.io/spring-security/reference/
+
+Apache Maven. Maven Documentation. https://maven.apache.org/guides/
+
+MDN Web Docs. HTML, CSS and JavaScript Documentation. https://developer.mozilla.org/
+
+MySQL. MySQL Reference Manual. https://dev.mysql.com/doc/
 ## WEEK 2 – VYAPAROS
 ## User Roles, System Architecture, SRS and Database Design
 
