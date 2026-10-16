@@ -13,6 +13,8 @@ Project Guide: Er. Ram Babu Buri
 
 ***Specializations:*** Java, Spring Boot, MySQL, Spring Security, HTML, CSS, and JavaScript.
 
+***Project live:***https://vyaaparos.netlify.app/
+
 
 
 ## TEAM MEMBERS
