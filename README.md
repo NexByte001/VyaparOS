@@ -342,6 +342,174 @@ VyaparOS follows a client-server architecture:
 
 The application uses a relational database approach to organize business information.
 
+### WEEK 4: DATABASE DESIGN & UI MOCK-UPS
+
+## 1. Database Architecture and Data Management Strategy
+
+VyaparOS follows a modular database architecture designed to organize business information and support the integration of its core functional modules. The application uses Java and Spring Boot for backend processing and a relational database approach for managing structured business records.
+
+H2 is used for development and testing where configured, while MySQL is the intended relational database for production deployment.
+
+### A. Relational Database Design
+
+The database is designed to organize the information required for authentication, customer management, appointment scheduling, service management, billing, inventory, and staff attendance.
+
+#### 1. Users and Authentication
+
+**Purpose:** Manages user accounts and authentication-related information.
+
+Expected fields may include:
+
+- `id` — Primary key identifying the user.
+- `username` — Username used to identify the account.
+- `email` — User's email address.
+- `password` — Securely hashed password.
+- `role` — Assigned user role, such as Admin or Staff.
+- `created_at` — Account creation timestamp.
+
+#### 2. Customers
+
+**Purpose:** Maintains customer information required for business operations.
+
+Expected fields may include:
+
+- `id` — Unique customer identifier.
+- `name` — Customer name.
+- `phone` — Contact number.
+- `email` — Email address, where applicable.
+- `created_at` — Record creation timestamp.
+
+#### 3. Appointments
+
+**Purpose:** Stores appointment information and supports daily scheduling.
+
+Expected fields may include:
+
+- `id` — Unique appointment identifier.
+- `customer_id` — Reference to the associated customer.
+- `service_id` — Reference to the selected service.
+- `staff_id` — Reference to the assigned staff member, where applicable.
+- `appointment_date` — Scheduled date and time.
+- `status` — Appointment status.
+
+#### 4. Services
+
+**Purpose:** Maintains the catalog of salon services offered by the business.
+
+Expected fields may include:
+
+- `id` — Unique service identifier.
+- `name` — Service name.
+- `description` — Service description.
+- `price` — Service price.
+- `duration` — Service duration, where supported.
+
+#### 5. Products and Inventory
+
+**Purpose:** Organizes product information and supports inventory management.
+
+Expected fields may include:
+
+- `id` — Unique product identifier.
+- `name` — Product name.
+- `price` — Product price.
+- `quantity` — Available stock quantity.
+- `description` — Product description, where applicable.
+
+#### 6. Billing and Financial Records
+
+**Purpose:** Supports the organization of invoices, billing details, and transaction information.
+
+Expected fields may include:
+
+- `id` — Unique billing record identifier.
+- `customer_id` — Associated customer, where applicable.
+- `amount` — Total amount.
+- `payment_status` — Payment status.
+- `transaction_date` — Date of the transaction.
+
+#### 7. Staff and Attendance
+
+**Purpose:** Maintains staff-related information and attendance records.
+
+Expected fields may include:
+
+- `id` — Unique attendance record identifier.
+- `staff_id` — Reference to the staff member.
+- `attendance_date` — Date of attendance.
+- `check_in` — Check-in time.
+- `check_out` — Check-out time.
+- `status` — Attendance status, where supported.
+
+**Note:** These field lists describe the intended data model. The final table names, field definitions, relationships, and constraints must match the actual backend entities and database schema.
+
+---
+
+## 2. Entity-Relationship (ER) Diagram
+
+The following conceptual ER diagram illustrates the relationships between the primary business entities in VyaparOS.
+
+```mermaid
+erDiagram
+    USER ||--o{ STAFF_ATTENDANCE : records
+    CUSTOMER ||--o{ APPOINTMENT : books
+    SERVICE ||--o{ APPOINTMENT : includes
+    STAFF ||--o{ APPOINTMENT : handles
+    STAFF ||--o{ STAFF_ATTENDANCE : has
+    CUSTOMER ||--o{ BILLING : associated_with
+    APPOINTMENT ||--o| BILLING : generates
+
+    USER {
+        Long id PK
+        String username
+        String email
+        String password
+        String role
+    }
+
+    CUSTOMER {
+        Long id PK
+        String name
+        String phone
+        String email
+    }
+
+    APPOINTMENT {
+        Long id PK
+        Long customer_id FK
+        Long service_id FK
+        Long staff_id FK
+        String status
+        Date appointment_date
+    }
+
+    SERVICE {
+        Long id PK
+        String name
+        Double price
+        String description
+    }
+
+    STAFF {
+        Long id PK
+        String name
+        String email
+    }
+
+    STAFF_ATTENDANCE {
+        Long id PK
+        Long staff_id FK
+        Date attendance_date
+        String status
+    }
+
+    BILLING {
+        Long id PK
+        Long customer_id FK
+        Long appointment_id FK
+        Double amount
+        String payment_status
+    }
 - **H2:** Used for development and testing where configured.
 - **MySQL:** Intended for production use when configured with persistent storage.
 
