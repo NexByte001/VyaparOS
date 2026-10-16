@@ -447,7 +447,6 @@ Expected fields may include:
 
 ## 2. Entity-Relationship (ER) Diagram
 
-The following conceptual ER diagram illustrates the relationships between the primary business entities in VyaparOS.
 
 ```mermaid
 erDiagram
