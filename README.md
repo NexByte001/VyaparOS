@@ -44,4 +44,318 @@ Ultimately, Vypaar OS seeks to provide a practical and maintainable digital solu
 
 
 
+## WEEK 2 – VYAPAROS
+## User Roles, System Architecture, SRS and Database Design
+
+---
+
+## 1. Introduction
+
+VyaparOS is a business management platform designed to organize and simplify daily business operations through a centralized dashboard. It integrates customer management, appointment scheduling, salon service management, billing, inventory, and staff attendance into a unified application.
+
+The system follows a modular architecture to support organized development, maintainability, and collaboration among team members.
+
+## 2. User Roles and Access Management
+
+VyaparOS defines two primary user roles to manage access to different application features.
+
+### 2.1 Admin
+
+The Admin is responsible for managing the business and its operations. Administrative functions include:
+
+- Managing customers and appointments.
+- Managing salon services and billing.
+- Maintaining product and inventory information.
+- Managing staff information and attendance.
+- Accessing administrative dashboard features.
+
+### 2.2 Staff
+
+Staff members can access operational features relevant to their responsibilities, depending on the permissions implemented in the application.
+
+These activities may include:
+
+- Viewing assigned appointments.
+- Accessing relevant customer information.
+- Performing staff-related operational activities.
+- Using authorized features of the platform.
+
+### 2.3 Authentication and Authorization
+
+The backend is developed using Java and Spring Boot. The security layer provides the foundation for user registration, login, authentication, and role-based access control.
+
+The purpose of this module is to ensure that users access the features permitted by their assigned roles.
+
+## 3. Software Requirements Specification (SRS)
+
+The Software Requirements Specification defines the objectives, functional requirements, non-functional requirements, user roles, and technical requirements of VyaparOS.
+
+### 3.1 Project Objectives
+
+The primary objectives of VyaparOS are:
+
+- To centralize daily business operations.
+- To simplify customer and appointment management.
+- To organize salon services and billing activities.
+- To provide a foundation for inventory and product management.
+- To support staff information and attendance management.
+- To provide a centralized dashboard for business administration.
+- To organize application development into manageable modules.
+
+### 3.2 Technology Stack
+
+| Component | Technology |
+|---|---|
+| Backend | Java, Spring Boot |
+| Frontend | HTML, CSS, JavaScript |
+| Build Tool | Apache Maven |
+| Database | H2 for development; MySQL as the intended relational database |
+| Security | Spring Security and role-based access management |
+| Version Control | Git and GitHub |
+| Frontend Deployment | Netlify |
+
+**Note:** The database configuration used in development and the final deployment configuration may differ. Production deployment requires a properly configured persistent database.
+
+## 4. System Architecture
+
+VyaparOS follows a client-server architecture consisting of three primary layers.
+
+### 4.1 Frontend Layer
+
+The frontend is developed using HTML, CSS, and JavaScript. It provides the user interface through which administrators and staff interact with the application's features.
+
+### 4.2 Backend Layer
+
+The backend is developed using Java and Spring Boot. It processes application requests, implements business logic, manages authentication and authorization, and provides APIs for communication with the frontend.
+
+### 4.3 Database Layer
+
+The database layer stores and organizes application records, including user accounts, customers, appointments, services, billing information, products, staff details, and attendance records, according to the implemented schema.
+
+### 4.4 Request Flow
+
+The general interaction between the application layers is as follows:
+
+```text
++----------------------------------+
+|          User Interface          |
+|       HTML, CSS, JavaScript      |
++----------------------------------+
+                 |
+                 v
++----------------------------------+
+|       Spring Boot Backend        |
+|                                  |
+|   REST APIs and Business Logic   |
+|   Authentication and Security    |
++----------------------------------+
+                 |
+                 v
++----------------------------------+
+|          Database Layer          |
+|       H2 / MySQL Configuration   |
++----------------------------------+
+```
+
+The frontend sends requests to the backend APIs. The backend processes the requests and interacts with the database when data needs to be retrieved or modified.
+
+## 5. Functional Modules
+
+VyaparOS is organized into the following functional modules.
+
+### Module 1: Authentication and Security
+
+This module provides the foundation for user registration, login, authentication, and role-based access management. It distinguishes between Admin and Staff roles and supports controlled access to application features.
+
+### Module 2: Customer and Appointment Management
+
+This module manages customer information and appointment records. It supports organizing appointments, associating appointments with relevant customers, and maintaining information required for daily scheduling.
+
+### Module 3: Salon Service Management
+
+This module organizes the services offered by the business. Service information can be maintained and associated with appointments where supported by the application.
+
+### Module 4: Billing and Financial Management
+
+This module is intended to organize billing activities and financial records. It provides the foundation for maintaining transaction information and supporting business financial monitoring.
+
+### Module 5: Inventory and Product Management
+
+This module is designed to maintain product information and support inventory-related operations. It provides the foundation for managing product records and tracking stock information.
+
+### Module 6: Staff and Attendance Management
+
+This module organizes staff information and attendance-related activities. It is intended to help administrators maintain attendance records and monitor staff-related operational information.
+
+### Module 7: Dashboard and Frontend Integration
+
+This module provides a centralized interface for accessing the platform's business management features. JavaScript communicates with the Spring Boot backend through APIs to exchange application data.
+
+## 6. Database Design and Data Management
+
+VyaparOS follows a relational database approach to organize application data and represent relationships between different business entities.
+
+### 6.1 Database Purpose
+
+The database is intended to store records associated with:
+
+- User accounts and roles.
+- Customer information.
+- Appointments and salon services.
+- Billing and financial transactions.
+- Products and inventory.
+- Staff information and attendance.
+
+### 6.2 Database Structure
+
+Data is organized into structured tables containing relevant fields, identifiers, and relationships according to the requirements of individual modules.
+
+The database schema provides the foundation for storing and retrieving business information through the backend.
+
+### 6.3 Data Relationships
+
+The database design may include relationships such as:
+
+- Customer records associated with appointments.
+- Appointments linked to relevant services.
+- Staff records associated with attendance information.
+- Billing records associated with relevant business transactions.
+- Product records used for inventory management.
+
+The exact relationships depend on the implemented database schema.
+
+### 6.4 Database Integration
+
+The Spring Boot backend connects application functionality to the configured database through its database connectivity and persistence mechanisms.
+
+H2 can be used for development and testing, while MySQL is the intended relational database for deployment where persistent storage is required.
+
+### 6.5 Data Persistence
+
+A persistent database configuration is necessary to ensure that business records remain available after application restarts.
+
+The deployment environment must use the appropriate database connection settings and storage configuration rather than relying on temporary in-memory storage for production data.
+
+## 7. Non-Functional Requirements
+
+Non-functional requirements define the expected quality, reliability, security, and usability of the application.
+
+### 7.1 Performance
+
+The application should provide responsive access to the dashboard and business modules. Backend APIs and database queries should be designed to support routine operations efficiently.
+
+### 7.2 Security
+
+The system should provide authentication and role-based authorization to control access to administrative and staff functions.
+
+Passwords should be stored using an appropriate secure hashing mechanism, and backend APIs should validate incoming requests before processing sensitive operations.
+
+### 7.3 Reliability and Data Persistence
+
+The system should maintain business records reliably. Customer, appointment, service, billing, inventory, and attendance data should be stored using an appropriate persistent database configuration.
+
+### 7.4 Maintainability
+
+The project separates frontend and backend responsibilities to support easier maintenance. Apache Maven manages backend dependencies and builds, while Git and GitHub support version control and collaborative development.
+
+### 7.5 Scalability
+
+The modular architecture provides a foundation for extending existing functionality and introducing additional business features as project requirements evolve.
+
+### 7.6 Usability
+
+The platform should provide a clear and accessible dashboard that allows administrators and staff to navigate authorized features and perform routine business activities efficiently.
+
+## 8. Version Control and Collaboration
+
+Git and GitHub are used to maintain the project source code and support collaborative development.
+
+The project repository provides a centralized location for maintaining source files, tracking changes, and coordinating development activities among team members.
+
+**Project Repository:** [NexByte001/VyaparOS](https://github.com/NexByte001/VyaparOS)
+
+## WEEK 3 – VYAPAROS
+## UML
+
+---
+
+# VyaparOS — Business Management System
+
+VyaparOS is a centralized business management platform designed to simplify daily business operations, including customer management, appointment scheduling, salon services, billing, inventory, and staff attendance.
+
+## System Architecture
+
+The following diagram illustrates the overall architecture of VyaparOS, including its frontend, Spring Boot backend, functional modules, database layer, and deployment tools.
+
+<p align="center">
+  <img src="vyparos-architecture.png" alt="VyaparOS System Architecture Diagram" width="100%">
+</p>
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Java, Spring Boot |
+| Build Tool | Apache Maven |
+| Database | H2 (Development), MySQL (Intended Production Database) |
+| Security | Spring Security, Role-Based Access Control |
+| Version Control | Git, GitHub |
+| Frontend Hosting | Netlify |
+
+## Core Modules
+
+### 1. Authentication and Security
+- User registration and login.
+- Admin and Staff roles.
+- Authentication and access control.
+
+### 2. Customer and Appointment Management
+- Customer record management.
+- Appointment scheduling.
+- Customer and appointment organization.
+
+### 3. Salon Service Management
+- Salon service catalog.
+- Service information management.
+- Association of services with appointments where supported.
+
+### 4. Billing and Financial Management
+- Billing and invoice management.
+- Financial transaction records.
+- Business financial tracking.
+
+### 5. Inventory and Product Management
+- Product information management.
+- Inventory records.
+- Stock management functionality.
+
+### 6. Staff and Attendance Management
+- Staff information management.
+- Attendance records.
+- Staff-related operational activities.
+
+### 7. Dashboard and API Layer
+- Centralized dashboard.
+- REST API communication.
+- Backend business logic and request validation.
+
+## Architecture Overview
+
+VyaparOS follows a client-server architecture:
+
+1. **Frontend Layer:** Provides the interface through which administrators and staff interact with the system.
+2. **Backend Layer:** Uses Java and Spring Boot to process requests, implement business logic, and expose APIs.
+3. **Security Layer:** Supports authentication and role-based access management.
+4. **Database Layer:** Stores application records using the configured database and persistence mechanisms.
+5. **Deployment and Version Control:** GitHub manages source code, while Netlify can host the frontend. The backend and database require appropriate hosting and configuration.
+
+## Database Design
+
+The application uses a relational database approach to organize business information.
+
+- **H2:** Used for development and testing where configured.
+- **MySQL:** Intended for production use when configured with persistent storage.
+
+> **Note:** Production deployment requires a properly configured persistent database to ensure that records remain available after application restarts.
 
