@@ -171,23 +171,15 @@ This module provides the foundation for user registration, login, authentication
 
 This module manages customer information and appointment records. It supports organizing appointments, associating appointments with relevant customers, and maintaining information required for daily scheduling.
 
-### Module 3: Salon Service Management
-
-This module organizes the services offered by the business. Service information can be maintained and associated with appointments where supported by the application.
-
-### Module 4: Billing and Financial Management
+### Module 3: Billing and Financial Management
 
 This module is intended to organize billing activities and financial records. It provides the foundation for maintaining transaction information and supporting business financial monitoring.
 
-### Module 5: Inventory and Product Management
+### Module 4: Inventory and Product Management
 
 This module is designed to maintain product information and support inventory-related operations. It provides the foundation for managing product records and tracking stock information.
 
-### Module 6: Staff and Attendance Management
-
-This module organizes staff information and attendance-related activities. It is intended to help administrators maintain attendance records and monitor staff-related operational information.
-
-### Module 7: Dashboard and Frontend Integration
+### Module 5: Dashboard and Frontend Integration
 
 This module provides a centralized interface for accessing the platform's business management features. JavaScript communicates with the Spring Boot backend through APIs to exchange application data.
 
@@ -286,10 +278,10 @@ VyaparOS is a centralized business management platform designed to simplify dail
 ## System Architecture
 
 The following diagram illustrates the overall architecture of VyaparOS, including its frontend, Spring Boot backend, functional modules, database layer, and deployment tools.
-
 <p align="center">
-  <img src="vyparos-architecture.png" alt="VyaparOS System Architecture Diagram" width="100%">
-</p>
+  <img src="./VyaparOS%20System%20Architecture%20Diagram.png"
+       alt="VyaparOS System Architecture Diagram"
+       width="100%">
 
 ## Technology Stack
 
@@ -315,8 +307,8 @@ The following diagram illustrates the overall architecture of VyaparOS, includin
 - Appointment scheduling.
 - Customer and appointment organization.
 
-### 3. Salon Service Management
-- Salon service catalog.
+### 3. Service Management
+- Service catalog.
 - Service information management.
 - Association of services with appointments where supported.
 
