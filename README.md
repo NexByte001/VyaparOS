@@ -271,10 +271,6 @@ The project repository provides a centralized location for maintaining source fi
 
 ---
 
-# VyaparOS — Business Management System
-
-VyaparOS is a centralized business management platform designed to simplify daily business operations, including customer management, appointment scheduling, salon services, billing, inventory, and staff attendance.
-
 ## System Architecture
 
 The following diagram illustrates the overall architecture of VyaparOS, including its frontend, Spring Boot backend, functional modules, database layer, and deployment tools.
@@ -349,5 +345,5 @@ The application uses a relational database approach to organize business informa
 - **H2:** Used for development and testing where configured.
 - **MySQL:** Intended for production use when configured with persistent storage.
 
-> **Note:** Production deployment requires a properly configured persistent database to ensure that records remain available after application restarts.
+
 
