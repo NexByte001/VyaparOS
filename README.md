@@ -48,204 +48,184 @@ Ultimately, Vypaar OS seeks to provide a practical and maintainable digital solu
  ## Week 2
 
 
-
 ### Requirement Analysis and Existing-System Review
 
 ***Duration: 13 July – 19 July 2026***
 
-***1. Objective***
+During this phase, the functional requirements, non-functional requirements, and user roles of VyaparOS were identified to define the expected behavior, usability, security, and performance of the application.
 
-The objective of the second week was to understand the functional requirements of the proposed application and review the workflow of a typical salon.
+#### 1. Functional Requirements
 
-***2. Activities Performed***
+Functional requirements describe the operations that the system is expected to perform.
 
-Reviewed the existing manual salon management process.
+- **User Authentication:** The system should provide registration and login functionality for authorized users.
+- **Role-Based Access Control:** Admin and Staff users should have access to features according to their assigned permissions.
+- **Customer Management:** The system should allow authorized users to add, view, update, and manage customer records.
+- **Appointment Management:** The system should support creating, viewing, updating, and managing salon appointments.
+- **Service Management:** The system should maintain salon service information, including service names, descriptions, and prices.
+- **Billing and Finance:** The system should support generating bills, recording payments, and maintaining financial information.
+- **Inventory Management:** The system should maintain product details, stock quantities, and relevant inventory records.
+- **Staff Management:** The system should maintain staff information and support authorized staff-management operations.
+- **Attendance Management:** The system should record staff attendance and relevant attendance statuses.
+- **Dashboard:** The system should provide a centralized interface for accessing relevant operational information.
+- **Data Management:** The system should store, retrieve, and update application records through the configured database.
 
-Identified the limitations of maintaining paper-based records.
+#### 2. Non-Functional Requirements
 
-Studied the relationship between customers, appointments, services, and billing.
+Non-functional requirements define the quality attributes and operational constraints of the application.
 
-Identified the administrative and staff-level activities.
+- **Security:** Authentication, appropriate access controls, and secure handling of user credentials should protect the application.
+- **Usability:** The interface should be simple, clear, and easy for salon administrators and staff to navigate.
+- **Performance:** Common operations, such as viewing customers and managing appointments, should respond within a reasonable time under normal operating conditions.
+- **Reliability:** The application should handle valid operations consistently and provide appropriate feedback when errors occur.
+- **Data Integrity:** Validation and appropriate database constraints should help prevent invalid, incomplete, or inconsistent records.
+- **Maintainability:** The application should use a structured codebase that makes debugging, updates, and future development easier.
+- **Compatibility:** The web interface should work with commonly used modern browsers.
+- **Scalability:** The system architecture should allow additional features and increased data volumes to be accommodated as the application grows.
+- **Availability:** The application should be accessible whenever its hosting environment and required services are operational.
+- **Error Handling:** The system should provide meaningful error messages without unnecessarily exposing sensitive technical information.
 
-Discussed the expected features of each application module.
+#### 3. User Roles
 
-Reviewed the proposed technologies and development approach.
+VyaparOS defines two primary user roles.
 
-Organized the initial functional and non-functional requirements.
+**A. Admin**
 
-3. Functional Requirements
+The Admin manages the overall operations and has access to administrative functions according to the configured permissions.
 
-The proposed system was expected to support:
+Responsibilities include:
+- Accessing the administrative dashboard.
+- Managing customer records and appointments.
+- Managing services and pricing.
+- Accessing billing and financial records.
+- Managing products and inventory.
+- Managing staff information and attendance.
+- Monitoring available business information.
 
-Customer registration and record management.
+**B. Staff**
 
-Appointment creation and status tracking.
+The Staff role supports day-to-day operations with access limited to the functions permitted by the application.
 
-Salon service management.
+Responsibilities may include:
+- Logging into the application.
+- Viewing relevant customer and appointment information.
+- Accessing assigned salon services and operational records.
+- Performing permitted appointment-related activities.
+- Viewing or recording attendance information where authorized.
 
-Billing and financial record management.
+*The exact permissions depend on the application's implemented access-control rules.*
 
-Product and inventory management.
+#### 4. Expected Outcome
 
-Staff management and attendance tracking.
+The requirement analysis established the main system functions, quality expectations, and user responsibilities for VyaparOS. These requirements provide a foundation for system design, database planning, backend development, interface development, and subsequent testing.
 
-Secure login and role-based access.
 
-Dashboard-based access to important information.
-
-4. Non-Functional Requirements
-
-The application should aim to provide:
-
-A simple and user-friendly interface.
-
-Appropriate authentication and access restrictions.
-
-Reliable storage and retrieval of records.
-
-Maintainable backend code.
-
-Reasonable response times.
-
-A structure that supports future enhancements.
-
-5. Outcome
-
-The team developed a clearer understanding of the project requirements, the intended users, and the responsibilities associated with each module.
-
-Week 3: System Architecture and Module Planning
+## Week 3: System Architecture and Module Planning
 
 Duration: 20 July – 26 July 2026
 
-1. Objective
 
-The objective of this week was to define the proposed system architecture and divide the project into manageable modules.
 
-2. Activities Performed
+### Week 3: Technology Selection
 
-Reviewed the overall structure of a web application.
+During this phase, suitable technologies, development tools, and the software environment were evaluated and selected for VyaparOS. The primary objective was to establish a reliable, maintainable, and scalable technology stack for a web-based multi-business management platform.
 
-Identified the frontend, backend, and database responsibilities.
+#### 1. Technology Stack
 
-Planned the communication between the interface and backend APIs.
+| Technology      | Purpose in VyaparOS                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| **Java**        | Implements backend business logic, application operations, and data processing.                       |
+| **Spring Boot** | Provides the framework for developing backend services, REST APIs, and web application functionality. |
+| **Maven**       | Manages project dependencies, build configuration, and application packaging.                         |
+| **HTML5**       | Defines the structure of the application's web pages.                                                 |
+| **CSS3**        | Handles styling, layouts, responsiveness, and visual presentation.                                    |
+| **JavaScript**  | Implements client-side interactions, dynamic interfaces, and communication with backend APIs.         |
+| **H2 / MySQL**  | Supports database operations, depending on the environment and active database configuration.         |
+| **Git**         | Tracks source-code changes and supports version control.                                              |
+| **GitHub**      | Hosts the project repository and supports team collaboration and documentation.                       |
+|                 |                                                                                                       |
 
-Defined the major functional modules.
+#### 2. Backend Technology Evaluation
 
-Assigned responsibilities among the five team members.
+**Java and Spring Boot**
 
-Reviewed the use of Java and Spring Boot for backend development.
+Java was selected as the primary backend programming language because it supports object-oriented programming, structured application development, and maintainable business logic.
 
-Considered the database requirements for storing business information.
+Spring Boot simplifies backend development by providing application configuration, dependency management integration, and support for building RESTful APIs. These capabilities are useful for connecting the frontend with business modules such as customer management, billing, inventory, and staff management.
 
-3. Proposed Architecture
+**Maven**
 
-The application follows a layered web-application approach:
+Maven was selected to manage external libraries, dependency versions, project builds, and packaging. Its standardized project structure also makes the application easier to maintain and build across development environments.
 
-Presentation Layer: HTML, CSS, and JavaScript provide the user interface.
+#### 3. Frontend Technology Evaluation
 
-Application Layer: Java and Spring Boot handle business logic and API requests.
+**HTML5, CSS3, and JavaScript**
 
-Security Layer: Spring Security supports authentication and access restrictions.
+These technologies were selected to develop a browser-based interface for VyaparOS.
 
-Data Layer: The configured database stores application records.
+- HTML5 structures the application's pages and forms.
+- CSS3 provides consistent layouts, styling, and responsive presentation.
+- JavaScript handles user interactions, dynamic updates, and API communication.
 
-Deployment Layer: The frontend is hosted on a web hosting platform, while the backend and database require compatible hosting and configuration.
+This combination supports an accessible interface through which authorized users can interact with the platform's different business-management modules.
 
-4. Module Distribution
+#### 4. Database Technology Evaluation
 
-Team Member
+**H2 and MySQL**
 
-Assigned Module
+Database technology was considered for storing and retrieving application data, including users, customers, appointments, products, billing records, and staff information.
 
-Jagrati Sahu
+- **H2:** A lightweight database suitable for development, testing, and environments configured to use an embedded database.
+- **MySQL:** A relational database suitable for persistent storage of structured business information.
 
-Backend and Security
+The active database depends on the application's configuration. Persistent storage and database migration must be configured appropriately for production use.
 
-Koshi Jain
+#### 5. Development Tools and Environment
 
-Customers and Appointments
+The following tools support application development, testing, and collaboration:
 
-Navya Raj
+- **JDK:** Provides the Java development and runtime environment.
+- **Apache Maven:** Builds the backend and resolves dependencies.
+- **Visual Studio Code:** Supports editing source files and project documentation.
+- **Web Browser:** Enables interface testing and interaction with the application.
+- **Git and GitHub:** Support version control, repository hosting, and project documentation.
 
-Billing and Finance
+The backend development environment was configured to support Java and Maven-based application execution.
 
-Palak Sahani
+#### 6. Technology Selection Criteria
 
-Inventory
+The technologies were evaluated according to the following criteria:
 
-Kumkum Rathore
+- Compatibility with the project's requirements.
+- Ease of development and maintenance.
+- Support for modular application architecture.
+- Database integration capabilities.
+- Security and access-control support.
+- Availability of documentation and development resources.
+- Suitability for future enhancements and increased business requirements.
 
-Frontend and Dashboard
+#### 7. Expected Outcome
 
-5. Outcome
+The technology selection phase established the proposed development stack and tools for VyaparOS. This provided a foundation for system architecture design, database planning, backend implementation, frontend development, and integration of the platform's business-management modules.
 
-A modular project structure and team responsibility plan were established to support organized development and integration.
 
-Week 4: Database Design and User Interface Planning
+## Week 4: System Design and UML Diagrams
 
-Duration: 27 July – 2 August 2026
+### Duration: 27 July – 2 August 2026
 
-1. Objective
+System Design and UML Diagrams
 
-The objective of this week was to identify the information required by each module and plan how users would interact with the application.
 
-2. Activities Performed
 
-Reviewed the data required for customer records.
+## Week 5: Backend Setup and Authentication Planning
 
-Identified the information needed for appointment scheduling.
+### Duration: 3 August – 9 August 2026
 
-Considered the relationship between services, appointments, and billing.
-
-Reviewed the requirements for product and inventory records.
-
-Identified the information required for staff and attendance records.
-
-Planned the organization of dashboard sections.
-
-Considered validation requirements for user input.
-
-3. Proposed Database Entities
-
-The database design may include the following logical entities, depending on the final implementation:
-
-Users
-
-Customers
-
-Appointments
-
-Services
-
-Bills or invoices
-
-Products
-
-Inventory transactions
-
-Staff
-
-Attendance records
-
-4. Interface Planning
-
-The interface was planned to provide navigation between the major modules, display important information, and offer forms for creating or updating records.
-
-The dashboard was intended to make frequently used features accessible without requiring users to navigate through multiple unrelated pages.
-
-5. Outcome
-
-The data requirements and interface structure were reviewed, providing a foundation for implementing and connecting the application modules.
-
-Week 5: Backend Setup and Authentication Planning
-
-Duration: 3 August – 9 August 2026
-
-1. Objective
+***1. Objective***
 
 The objective of this week was to focus on the backend structure, authentication requirements, and communication between the frontend and backend.
 
-2. Activities Performed
+***2. Activities Performed***
 
 Reviewed the Spring Boot application structure.
 
@@ -261,31 +241,31 @@ Planned administrative and staff access levels.
 
 Identified the need for input validation and error handling.
 
-3. Backend Responsibilities
+***3. Backend Responsibilities***
 
 The backend is responsible for receiving requests, processing business logic, interacting with the database, and returning appropriate responses to the frontend.
 
 The planned API structure supports operations such as creating, retrieving, updating, and deleting records where those operations are required and implemented.
 
-4. Security Considerations
+***4. Security Considerations***
 
 The application requires suitable authentication and authorization mechanisms to restrict access to administrative and staff functionality.
 
 Sensitive configuration values should be managed appropriately, and database credentials should not be exposed in publicly accessible source files.
 
-5. Outcome
+***5. Outcome***
 
 The backend requirements and security considerations were reviewed in preparation for integrating the business modules.
 
-Week 6: Customer and Appointment Management
+## Week 6: Customer and Appointment Management
 
-Duration: 10 August – 16 August 2026
+### Duration: 10 August – 16 August 2026
 
-1. Objective
+***1. Objective***
 
 The objective of this week was to focus on the customer management and appointment management requirements of the salon system.
 
-2. Activities Performed
+***2. Activities Performed***
 
 Reviewed the customer registration workflow.
 
@@ -301,11 +281,11 @@ Considered validation for required customer and appointment fields.
 
 Planned the display of appointment records.
 
-3. Customer Management
+***3. Customer Management***
 
 The customer module is intended to organize customer details and make records accessible when managing salon services and appointments.
 
-4. Appointment Management
+***4. Appointment Management***
 
 The appointment module is intended to support the creation and tracking of bookings. Appointment information should be associated with the relevant customer and service where supported by the application.
 
