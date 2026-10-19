@@ -44,9 +44,9 @@ By integrating backend services, database operations, and security mechanisms in
 
 Ultimately, Vypaar OS seeks to provide a practical and maintainable digital solution for management, helping owners and staff improve operational efficiency and deliver a more organized customer experience.
 
-
+---
  ## Week 2
-
+---
 
 ### Requirement Analysis and Existing-System Review
 
@@ -119,14 +119,13 @@ Responsibilities may include:
 
 The requirement analysis established the main system functions, quality expectations, and user responsibilities for VyaparOS. These requirements provide a foundation for system design, database planning, backend development, interface development, and subsequent testing.
 
-
-## Week 3: System Architecture and Module Planning
-
-Duration: 20 July – 26 July 2026
-
-
+---
 
 ### Week 3: Technology Selection
+
+---
+Duration: 20 July – 26 July 2026
+
 
 During this phase, suitable technologies, development tools, and the software environment were evaluated and selected for VyaparOS. The primary objective was to establish a reliable, maintainable, and scalable technology stack for a web-based multi-business management platform.
 
@@ -208,13 +207,92 @@ The technologies were evaluated according to the following criteria:
 
 The technology selection phase established the proposed development stack and tools for VyaparOS. This provided a foundation for system architecture design, database planning, backend implementation, frontend development, and integration of the platform's business-management modules.
 
+---
 
 ## Week 4: System Design and UML Diagrams
 
+---
+
 ### Duration: 27 July – 2 August 2026
 
-System Design and UML Diagrams
+During this phase, the system architecture, application workflows, database structure, and user interface of VyaparOS were planned. The primary objective was to define how different components interact to support business operations through a centralized multi-business management platform.
 
+***1. System Architecture Design***
+
+
+***2. UML Diagram Planning***
+
+
+**3. Database Structure Planning**
+
+The database structure was planned to support the platform's major functional modules.
+
+| Entity | Purpose |
+|---|---|
+| `User` | Stores user account information and authentication-related data. |
+| `Business` | Represents a business registered or managed through the platform. |
+| `Customer` | Stores customer information associated with relevant business operations. |
+| `Appointment` | Stores appointment details where applicable to the business. |
+| `Service` | Maintains service information and pricing where applicable. |
+| `Product` | Stores product and inventory information. |
+| `Invoice` | Maintains billing records. |
+| `Payment` | Records payment-related information. |
+| `Staff` | Stores staff-related information. |
+| `Attendance` | Maintains staff attendance records. |
+
+The proposed structure aims to reduce unnecessary duplication and maintain consistency between related records.
+
+Because VyaparOS is intended for multiple businesses, business-specific data should be associated with the appropriate business wherever applicable. Access controls should prevent users from accessing records belonging to businesses they are not authorized to manage.
+
+The final entities and relationships must match the actual database schema implemented in VyaparOS.
+
+**4. User Interface Planning**
+
+The interface was planned to provide a consistent and accessible experience across the application's major modules.
+
+The principal interface components include:
+
+Login and Registration: Interfaces for user authentication and account creation, where supported.
+
+Dashboard: A centralized view of relevant business information.
+
+Customer Management: Forms and views for managing customer records.
+
+Appointment Management: Interfaces for scheduling and tracking appointments.
+
+Billing and Finance: Screens for managing invoices and financial records.
+
+Inventory Management: Views for maintaining products and stock information.
+
+Staff Management: Interfaces for staff records and attendance.
+
+The design emphasizes clear navigation, consistent layouts, readable information, and appropriate form validation.
+
+**5. Design Considerations**
+
+The system design considered the following principles:
+
+Modularity: Organize functionality into identifiable business-management modules.
+
+Separation of Concerns: Separate frontend presentation, backend logic, security, and data access.
+
+Data Integrity: Define appropriate relationships and validation rules for stored records.
+
+Security: Restrict access to authorized users and business-specific data.
+
+Maintainability: Use a structured design that supports debugging and future enhancements.
+
+Extensibility: Allow additional business-management features to be introduced without unnecessarily redesigning the entire application.
+
+Consistency: Maintain common navigation and interaction patterns across modules.
+
+**6. Expected Outcome**
+
+The system design phase established the architectural approach, major application components, proposed database entities, user workflows, and interface structure for VyaparOS.
+
+These design specifications provide a foundation for backend implementation, database integration, frontend development, security configuration, and subsequent testing.
+
+Deliverables: System architecture, UML diagrams, database design, and preliminary user interface plans.
 
 
 ## Week 5: Backend Setup and Authentication Planning
