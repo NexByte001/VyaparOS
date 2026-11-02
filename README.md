@@ -596,4 +596,20 @@ The finalization phase organized the project source code, academic documentation
 ---
 ---
 
-W
+
+### 📚 Project Documentation
+
+All the official documentation and presentation files for **VyaparOS** are available below.
+
+| Document | Description | Link |
+|---|---|---|
+| 📄 Project Report | Complete project report, including development details, implementation, modules, and outcomes. | [View Project Report](docs/VyaparOS-Report-2.docx) |
+| 📋 Software Requirements Specification (SRS) | Functional and non-functional requirements, system specifications, and project requirements. | [View SRS Document](docs/VyaparOS-SRS.docx) |
+| 📊 Project Presentation | Project overview, objectives, technical approach, modules, implementation, and team contributions. | [View Project Presentation](docs/VyaparOS-Project-Presentation.pptx) |
+
+### 📁 Documentation Structure
+
+
+
+> **Note:** All documents are part of the official academic project documentation of VyaparOS, developed by Team NexByte.
+
